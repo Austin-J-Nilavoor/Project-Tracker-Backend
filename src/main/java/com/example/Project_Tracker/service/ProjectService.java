@@ -3,10 +3,12 @@ package com.example.Project_Tracker.service;
 import com.example.Project_Tracker.dto.ProjectDto;
 import com.example.Project_Tracker.entity.Project;
 import com.example.Project_Tracker.entity.User;
+import com.example.Project_Tracker.exceptions.ResourceNotFoundException;
 import com.example.Project_Tracker.repository.ProjectRepository;
 import com.example.Project_Tracker.repository.UserRepository;
 import com.example.Project_Tracker.utils.MapperUtils;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +28,7 @@ public class ProjectService {
     public List<ProjectDto> getAllProjects() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         List<Project> projects;
 
@@ -54,7 +56,7 @@ public class ProjectService {
 
     public ProjectDto getProjectById(String id) {
         Project project = projectRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
         return convertToDto(project);
     }
 
@@ -64,7 +66,7 @@ public class ProjectService {
 
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (currentUser.getIbu() == null)
             throw new RuntimeException("User is not associated with any IBU");
@@ -81,7 +83,7 @@ public class ProjectService {
     // ✅ Update project
     public ProjectDto updateProjectFromDto(String id, ProjectDto dto) {
         Project existing = projectRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
         existing.setName(dto.getName());
         existing.setDescription(dto.getDescription());
@@ -97,7 +99,7 @@ public class ProjectService {
     // ✅ Delete project
     public void deleteProject(String id) {
         if (!projectRepository.existsById(id))
-            throw new RuntimeException("Project not found");
+            throw new ResourceNotFoundException("Project not found with id: " + id);
         projectRepository.deleteById(id);
     }
 

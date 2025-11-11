@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,8 +38,19 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
-        return ResponseEntity.ok(authService.login(request));
-    }
+@PostMapping("/login")
+public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody AuthRequest request) {
+    AuthResponse authResponse = authService.login(request);
+
+    ApiResponse<AuthResponse> response = ApiResponse.<AuthResponse>builder()
+            .statusCode(HttpStatus.OK.value())
+            .success(true)
+            .message("Login successful")
+            .data(authResponse)
+            .timestamp(LocalDateTime.now())
+            .build();
+
+    return ResponseEntity.ok(response);
+}
+
 }

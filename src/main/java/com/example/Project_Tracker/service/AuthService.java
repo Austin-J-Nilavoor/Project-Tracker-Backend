@@ -6,6 +6,7 @@ import com.example.Project_Tracker.dto.RegisterRequest;
 import com.example.Project_Tracker.dto.UserDto;
 import com.example.Project_Tracker.entity.Ibu;
 import com.example.Project_Tracker.entity.User;
+import com.example.Project_Tracker.exceptions.ResourceNotFoundException;
 import com.example.Project_Tracker.repository.IbuRepository;
 import com.example.Project_Tracker.repository.UserRepository;
 import com.example.Project_Tracker.security.JwtTokenProvider;
@@ -34,8 +35,8 @@ public class AuthService {
         }
 
         Ibu ibu = ibuRepository.findByName(request.getIbuName())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        
                         "IBU not found with name: " + request.getIbuName()));
 
         User user = User.builder()
@@ -61,7 +62,7 @@ public class AuthService {
 
     public AuthResponse login(AuthRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException( "User not found"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new RuntimeException("Invalid credentials");

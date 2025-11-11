@@ -54,7 +54,7 @@ public class GlobalExceptionHandler {
         // ✅ Custom exception example
         @ExceptionHandler(ResourceNotFoundException.class)
         public ResponseEntity<ApiResponse<String>> handleResourceNotFound(ResourceNotFoundException ex) {
-                System.out.println("🟢 Handling ResourceNotFoundException: " + ex.getMessage());
+                
                 ApiResponse<String> response = ApiResponse.<String>builder()
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .success(false)

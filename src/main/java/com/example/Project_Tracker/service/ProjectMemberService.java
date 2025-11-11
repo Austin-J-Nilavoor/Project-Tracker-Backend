@@ -5,11 +5,13 @@ import com.example.Project_Tracker.entity.Project;
 import com.example.Project_Tracker.entity.ProjectMember;
 import com.example.Project_Tracker.entity.ProjectMemberId;
 import com.example.Project_Tracker.entity.User;
+import com.example.Project_Tracker.exceptions.ResourceNotFoundException;
 import com.example.Project_Tracker.repository.ProjectMemberRepository;
 import com.example.Project_Tracker.repository.ProjectRepository;
 import com.example.Project_Tracker.repository.UserRepository;
 import com.example.Project_Tracker.utils.MapperUtils;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -40,7 +42,7 @@ public class ProjectMemberService {
         User currentUser = getCurrentUser();
 
         Project project = projectRepository.findById(dto.getProjectId())
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
         // 🔒 Allow only Manager or Project Manager
         if (!hasManagerPrivileges(currentUser, project.getId())) {
@@ -48,7 +50,7 @@ public class ProjectMemberService {
         }
 
         User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         ProjectMember member = new ProjectMember();
         member.setProject(project);
@@ -71,7 +73,7 @@ public class ProjectMemberService {
 
         ProjectMemberId id = new ProjectMemberId(projectId, userId);
         if (!projectMemberRepository.existsById(id)) {
-            throw new RuntimeException("Project member not found");
+            throw new ResourceNotFoundException("Project member not found");
         }
         projectMemberRepository.deleteById(id);
     }
@@ -101,7 +103,7 @@ public class ProjectMemberService {
     private User getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     // ✅ Utility — check if user is Manager or Project Manager for given project

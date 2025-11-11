@@ -5,12 +5,14 @@ import com.example.Project_Tracker.entity.Project;
 import com.example.Project_Tracker.entity.Task;
 import com.example.Project_Tracker.entity.User;
 import com.example.Project_Tracker.enums.TaskStatus;
+import com.example.Project_Tracker.exceptions.ResourceNotFoundException;
 import com.example.Project_Tracker.repository.ProjectMemberRepository;
 import com.example.Project_Tracker.repository.ProjectRepository;
 import com.example.Project_Tracker.repository.TaskRepository;
 import com.example.Project_Tracker.repository.UserRepository;
 import com.example.Project_Tracker.utils.MapperUtils;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -60,7 +62,7 @@ public class TaskService {
     // 🔹 Update task — only MANAGER or PROJECT_MANAGER
     public TaskDto updateTask(String id, TaskDto updatedTaskDto) {
         Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         authorizeProjectManagerOrManager(task.getProject().getId());
 
@@ -73,7 +75,7 @@ public class TaskService {
         // Optional reassignment
         if (updatedTaskDto.getAssignedToId() != null) {
             User user = userRepository.findById(updatedTaskDto.getAssignedToId())
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
             task.setAssignedTo(user);
         }
 
@@ -85,11 +87,11 @@ public class TaskService {
     // 🔹 Update task status — only assigned user OR MANAGER or PROJECT_MANAGER
     public TaskDto updateTaskStatus(String id, TaskStatus status) {
         Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         User currentUser = userRepository.findByEmail(
                 SecurityContextHolder.getContext().getAuthentication().getName()
-        ).orElseThrow(() -> new RuntimeException("User not found"));
+        ).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         boolean isManager = currentUser.getRole().equalsIgnoreCase("MANAGER");
         boolean isProjectManager = projectMemberRepository
@@ -111,7 +113,7 @@ public class TaskService {
     // 🔹 Delete task — only MANAGER or PROJECT_MANAGER
     public boolean deleteTask(String id) {
         Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         authorizeProjectManagerOrManager(task.getProject().getId());
 
@@ -123,7 +125,7 @@ public class TaskService {
     private void authorizeProjectManagerOrManager(String projectId) {
         User currentUser = userRepository.findByEmail(
                 SecurityContextHolder.getContext().getAuthentication().getName()
-        ).orElseThrow(() -> new RuntimeException("User not found"));
+        ).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         boolean isProjectManager = projectMemberRepository
                 .existsById_ProjectIdAndUser_IdAndRoleInProject(projectId, currentUser.getId(), "PROJECT_MANAGER");
@@ -156,13 +158,13 @@ public class TaskService {
 
         if (dto.getProjectId() != null) {
             Project project = projectRepository.findById(dto.getProjectId())
-                    .orElseThrow(() -> new RuntimeException("Project not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
             task.setProject(project);
         }
 
         if (dto.getAssignedToId() != null) {
             User user = userRepository.findById(dto.getAssignedToId())
-                    .orElseThrow(() -> new RuntimeException("Assigned user not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Assigned user not found"));
             task.setAssignedTo(user);
         }
 

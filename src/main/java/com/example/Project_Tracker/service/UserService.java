@@ -3,6 +3,7 @@ package com.example.Project_Tracker.service;
 import com.example.Project_Tracker.dto.UserDto;
 import com.example.Project_Tracker.entity.Ibu;
 import com.example.Project_Tracker.entity.User;
+import com.example.Project_Tracker.exceptions.ResourceNotFoundException;
 import com.example.Project_Tracker.repository.IbuRepository;
 import com.example.Project_Tracker.repository.UserRepository;
 import com.example.Project_Tracker.utils.MapperUtils;
@@ -29,7 +30,7 @@ public class UserService {
 
         // Find user in DB
         User currentUser = userRepository.findByEmail(loggedInEmail)
-                .orElseThrow(() -> new RuntimeException("Logged-in user not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Logged-in user not found"));
 
         List<User> users;
 
@@ -54,14 +55,14 @@ public class UserService {
     // ✅ Get single user by ID
     public UserDto getUserById(String id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() ->  new ResourceNotFoundException( "User not found with ID: " + id));
         return convertToDto(user);
     }
 
     // ✅ Update existing user
     public UserDto updateUser(String id, UserDto userDto) {
         User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() ->  new ResourceNotFoundException( "User not found with ID: " + id));
 
         existingUser.setName(userDto.getName());
         existingUser.setEmail(userDto.getEmail());
@@ -69,7 +70,7 @@ public class UserService {
 
         if (userDto.getIbuId() != null) {
             Ibu ibu = ibuRepository.findById(userDto.getIbuId())
-                    .orElseThrow(() -> new RuntimeException("IBU not found"));
+                    .orElseThrow(() ->  new ResourceNotFoundException( "IBU not found with ID: " + userDto.getIbuId()));
             existingUser.setIbu(ibu);
         } else {
             existingUser.setIbu(null);
@@ -82,7 +83,7 @@ public class UserService {
     // ✅ Delete user
     public void deleteUser(String id) {
         if (!userRepository.existsById(id)) {
-            throw new RuntimeException("User not found");
+            throw new ResourceNotFoundException( "User not found with ID: " + id);
         }
         userRepository.deleteById(id);
     }
