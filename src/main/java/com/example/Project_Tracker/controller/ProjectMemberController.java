@@ -3,6 +3,8 @@ package com.example.Project_Tracker.controller;
 import com.example.Project_Tracker.dto.ApiResponse;
 import com.example.Project_Tracker.dto.ProjectMemberDto;
 import com.example.Project_Tracker.service.ProjectMemberService;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +36,7 @@ public class ProjectMemberController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<ProjectMemberDto>> addMember(@RequestBody ProjectMemberDto dto) {
+    public ResponseEntity<ApiResponse<ProjectMemberDto>> addMember(@Valid @RequestBody ProjectMemberDto dto) {
         ProjectMemberDto created = projectMemberService.addMember(dto);
 
         ApiResponse<ProjectMemberDto> response = ApiResponse.<ProjectMemberDto>builder()

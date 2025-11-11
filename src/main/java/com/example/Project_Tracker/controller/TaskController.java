@@ -4,6 +4,8 @@ import com.example.Project_Tracker.dto.ApiResponse;
 import com.example.Project_Tracker.dto.TaskDto;
 import com.example.Project_Tracker.enums.TaskStatus;
 import com.example.Project_Tracker.service.TaskService;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -50,7 +52,7 @@ public class TaskController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<TaskDto>> createTask(@RequestBody TaskDto taskDto) {
+    public ResponseEntity<ApiResponse<TaskDto>> createTask(@Valid @RequestBody TaskDto taskDto) {
         TaskDto created = taskService.createTask(taskDto);
 
         ApiResponse<TaskDto> response = ApiResponse.<TaskDto>builder()

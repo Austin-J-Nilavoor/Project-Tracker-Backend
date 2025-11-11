@@ -3,6 +3,8 @@ package com.example.Project_Tracker.controller;
 import com.example.Project_Tracker.dto.ApiResponse;
 import com.example.Project_Tracker.dto.MilestoneDto;
 import com.example.Project_Tracker.service.MilestoneService;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +38,7 @@ public class MilestoneController {
 
     // ✅ Create milestone
     @PostMapping
-    public ResponseEntity<ApiResponse<MilestoneDto>> createMilestone(@RequestBody MilestoneDto milestoneDto) {
+    public ResponseEntity<ApiResponse<MilestoneDto>> createMilestone(@Valid @RequestBody MilestoneDto milestoneDto) {
         MilestoneDto created = milestoneService.createMilestone(milestoneDto);
 
         ApiResponse<MilestoneDto> response = ApiResponse.<MilestoneDto>builder()

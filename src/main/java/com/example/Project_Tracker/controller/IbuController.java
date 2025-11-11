@@ -3,6 +3,8 @@ package com.example.Project_Tracker.controller;
 import com.example.Project_Tracker.dto.ApiResponse;
 import com.example.Project_Tracker.dto.IbuDto;
 import com.example.Project_Tracker.service.IbuService;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +38,7 @@ public class IbuController {
 
     // ✅ Create new IBU
     @PostMapping
-    public ResponseEntity<ApiResponse<IbuDto>> createIbu(@RequestBody IbuDto ibuDto) {
+    public ResponseEntity<ApiResponse<IbuDto>> createIbu(@Valid @RequestBody IbuDto ibuDto) {
         IbuDto newIbu = ibuService.createIbu(ibuDto);
 
         ApiResponse<IbuDto> response = ApiResponse.<IbuDto>builder()

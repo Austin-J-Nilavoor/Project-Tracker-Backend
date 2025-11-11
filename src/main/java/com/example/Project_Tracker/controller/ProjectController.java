@@ -3,6 +3,8 @@ package com.example.Project_Tracker.controller;
 import com.example.Project_Tracker.dto.ApiResponse;
 import com.example.Project_Tracker.dto.ProjectDto;
 import com.example.Project_Tracker.service.ProjectService;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,7 +51,7 @@ public class ProjectController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<ProjectDto>> createProject(@RequestBody ProjectDto projectDto) {
+    public ResponseEntity<ApiResponse<ProjectDto>> createProject(@Valid @RequestBody ProjectDto projectDto) {
         ProjectDto created = projectService.createProjectFromDto(projectDto);
 
         ApiResponse<ProjectDto> response = ApiResponse.<ProjectDto>builder()
