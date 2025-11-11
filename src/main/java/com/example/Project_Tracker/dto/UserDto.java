@@ -2,18 +2,17 @@ package com.example.Project_Tracker.dto;
 
 import lombok.*;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class UserDto {
     private String id;
-
     private String name;
     private String email;
-    private String role; // ADMIN, MANAGER, PROJECT_MANAGER, EMPLOYEE
+    private String role;
 
-    private String ibuId;   // Linked IBU ID
-    private String ibuName; // Display name of IBU
+    // 🔹 Flattened IBU relation
+    private String ibuId;
+    private String ibuName;
 }

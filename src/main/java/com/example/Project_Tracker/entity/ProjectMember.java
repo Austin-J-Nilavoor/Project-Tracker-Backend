@@ -30,5 +30,5 @@ public class ProjectMember {
     @Column(length = 50)
     private String roleInProject; // PM, Developer, Tester, Designer
 
-    private LocalDateTime joinedAt = LocalDateTime.now();
+    private LocalDateTime joinedAt;
 }

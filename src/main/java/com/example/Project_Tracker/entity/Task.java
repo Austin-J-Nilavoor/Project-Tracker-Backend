@@ -53,8 +53,7 @@ public class Task {
     private String priority;
 
     private LocalDate dueDate;
-    private Integer progress = 0;
 
     private final LocalDateTime createdAt = LocalDateTime.now();
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    private LocalDateTime updatedAt;
 }

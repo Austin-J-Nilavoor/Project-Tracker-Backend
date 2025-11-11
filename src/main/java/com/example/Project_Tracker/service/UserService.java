@@ -47,6 +47,8 @@ public class UserService {
             Ibu ibu = ibuRepository.findById(userDto.getIbuId())
                     .orElseThrow(() -> new RuntimeException("IBU not found"));
             existingUser.setIbu(ibu);
+        } else {
+            existingUser.setIbu(null);
         }
 
         User updatedUser = userRepository.save(existingUser);

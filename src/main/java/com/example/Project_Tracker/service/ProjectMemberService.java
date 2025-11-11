@@ -12,6 +12,7 @@ import com.example.Project_Tracker.utils.MapperUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,6 +47,7 @@ public class ProjectMemberService {
         member.setProject(project);
         member.setUser(user);
         member.setRoleInProject(dto.getRole());
+        member.setJoinedAt(LocalDateTime.now());
 
         ProjectMember saved = projectMemberRepository.save(member);
         return convertToDto(saved);

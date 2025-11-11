@@ -48,8 +48,8 @@ public class Project {
     @JoinColumn(name = "created_by")
     private User createdBy;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     private List<Milestone> milestones;

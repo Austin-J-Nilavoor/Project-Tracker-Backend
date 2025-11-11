@@ -11,6 +11,7 @@ import com.example.Project_Tracker.utils.MapperUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,6 +42,7 @@ public class ProjectService {
     // ✅ Create project from DTO
     public ProjectDto createProjectFromDto(ProjectDto dto) {
         Project project = convertToEntity(dto);
+        project.setCreatedAt(LocalDateTime.now());
         Project saved = projectRepository.save(project);
         return convertToDto(saved);
     }
@@ -67,7 +69,7 @@ public class ProjectService {
                     .orElseThrow(() -> new RuntimeException("IBU not found"));
             existing.setIbu(ibu);
         }
-
+        existing.setUpdatedAt(LocalDateTime.now());
         Project updated = projectRepository.save(existing);
         return convertToDto(updated);
     }
