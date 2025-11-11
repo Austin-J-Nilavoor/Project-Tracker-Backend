@@ -4,6 +4,7 @@ import com.example.Project_Tracker.dto.MilestoneDto;
 import com.example.Project_Tracker.entity.Milestone;
 import com.example.Project_Tracker.entity.Project;
 import com.example.Project_Tracker.entity.User;
+import com.example.Project_Tracker.enums.Status;
 import com.example.Project_Tracker.repository.MilestoneRepository;
 import com.example.Project_Tracker.repository.ProjectMemberRepository;
 import com.example.Project_Tracker.repository.ProjectRepository;
@@ -75,10 +76,10 @@ public class MilestoneService {
             existing.setDependsOn(null);
         }
 
-        if ("IN_PROGRESS".equalsIgnoreCase(dto.getStatus())) {
+        if (dto.getStatus() == Status.IN_PROGRESS) {
             if (existing.getDependsOn() != null &&
-                    !"COMPLETED".equalsIgnoreCase(existing.getDependsOn().getStatus())) {
-                throw new RuntimeException("Cannot start this milestone until the dependent one is completed");
+                    existing.getDependsOn().getStatus() != Status.COMPLETED) {
+                throw new IllegalStateException("Cannot start this milestone until the dependent one is completed");
             }
         }
 
@@ -101,8 +102,8 @@ public class MilestoneService {
     // ✅ Common method — Authorize current user for a given project
     private void authorizeProjectAccess(String projectId) {
         User currentUser = userRepository.findByEmail(
-                SecurityContextHolder.getContext().getAuthentication().getName()
-        ).orElseThrow(() -> new RuntimeException("User not found"));
+                SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         boolean isProjectManager = projectMemberRepository
                 .existsById_ProjectIdAndUser_IdAndRoleInProject(projectId, currentUser.getId(), "PROJECT_MANAGER");

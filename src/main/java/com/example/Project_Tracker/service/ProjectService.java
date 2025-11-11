@@ -1,10 +1,8 @@
 package com.example.Project_Tracker.service;
 
 import com.example.Project_Tracker.dto.ProjectDto;
-import com.example.Project_Tracker.entity.Ibu;
 import com.example.Project_Tracker.entity.Project;
 import com.example.Project_Tracker.entity.User;
-import com.example.Project_Tracker.repository.IbuRepository;
 import com.example.Project_Tracker.repository.ProjectRepository;
 import com.example.Project_Tracker.repository.UserRepository;
 import com.example.Project_Tracker.utils.MapperUtils;
@@ -21,8 +19,7 @@ import java.util.stream.Collectors;
 public class ProjectService {
 
     private final ProjectRepository projectRepository;
-    private final IbuRepository ibuRepository;
-    private final UserRepository userRepository; // ✅ FIXED
+    private final UserRepository userRepository;
     private final MapperUtils mapperUtils;
 
     // ✅ Get all projects based on role
@@ -54,7 +51,7 @@ public class ProjectService {
                 .collect(Collectors.toList());
     }
 
-    // ✅ Get single project
+
     public ProjectDto getProjectById(String id) {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Project not found"));

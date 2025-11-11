@@ -5,6 +5,8 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+import com.example.Project_Tracker.enums.ProjectRole;
+
 @Entity
 @Table(name = "project_members")
 @Getter
@@ -13,7 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class ProjectMember {
-    
+
     @Builder.Default
     @EmbeddedId
     private ProjectMemberId id = new ProjectMemberId();
@@ -28,8 +30,9 @@ public class ProjectMember {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 50)
-    private String roleInProject; // PM, Developer, Tester, Designer
+    private ProjectRole roleInProject; // PM, Developer, Tester, Designer
 
     private LocalDateTime joinedAt;
 }

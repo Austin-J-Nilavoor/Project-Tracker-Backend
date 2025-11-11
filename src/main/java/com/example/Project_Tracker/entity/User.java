@@ -30,7 +30,7 @@ public class User {
     private String passwordHash;
 
     @Column(nullable = false, length = 25)
-    private String role; // ADMIN, MANAGER, PROJECT_MANAGER, EMPLOYEE
+    private String role; // ADMIN, MANAGER, EMPLOYEE
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ibu_id")

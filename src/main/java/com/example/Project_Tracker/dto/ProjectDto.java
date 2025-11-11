@@ -8,6 +8,9 @@ import lombok.*;
 
 import java.time.LocalDate;
 
+import com.example.Project_Tracker.enums.Priority;
+import com.example.Project_Tracker.enums.Status;
+
 @Getter
 @Setter
 @Builder
@@ -24,11 +27,11 @@ public class ProjectDto {
     @Size(max = 500, message = "Description cannot exceed 500 characters")
     private String description;
 
-    @NotBlank(message = "Status is required (e.g., Pending, Active, Completed)")
-    private String status;
+    @NotNull(message = "Status is required (e.g., Pending, In Progress, Completed)")
+    private Status status;
 
-    @NotBlank(message = "Priority is required (e.g., Low, Medium, High)")
-    private String priority;
+    @NotNull(message = "Priority is required (e.g., Low, Medium, High)")
+    private Priority priority;
 
     @NotNull(message = "Start date is required")
     @FutureOrPresent(message = "Start date cannot be in the past")

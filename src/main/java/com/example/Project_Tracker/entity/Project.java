@@ -7,6 +7,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.example.Project_Tracker.enums.Priority;
+import com.example.Project_Tracker.enums.Status;
+
 @Entity
 @Table(name = "projects")
 @Getter
@@ -34,11 +37,13 @@ public class Project {
     private LocalDate startDate;
     private LocalDate endDate;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 25)
-    private String status; // Open, In Progress, Completed
+    private Status status; // Open, In Progress, Completed
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 15)
-    private String priority; // Low, Medium, High, Critical
+    private Priority priority; // Low, Medium, High, Critical
 
     // @ManyToOne(fetch = FetchType.LAZY)
     // @JoinColumn(name = "manager_user_id", nullable = false)

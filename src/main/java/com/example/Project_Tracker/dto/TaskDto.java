@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import java.time.LocalDate;
 
-import com.example.Project_Tracker.enums.TaskPriority;
+import com.example.Project_Tracker.enums.Priority;
 import com.example.Project_Tracker.enums.TaskStatus;
 
 @Data
@@ -27,7 +27,7 @@ public class TaskDto {
     private TaskStatus status;
 
     @NotNull(message = "Task priority is required")
-    private TaskPriority priority;
+    private Priority priority;
 
     @NotNull(message = "Due date is required")
     @FutureOrPresent(message = "Due date cannot be in the past")

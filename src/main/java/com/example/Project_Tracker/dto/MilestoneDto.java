@@ -8,6 +8,8 @@ import lombok.*;
 
 import java.time.LocalDate;
 
+import com.example.Project_Tracker.enums.Status;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -24,8 +26,8 @@ public class MilestoneDto {
     @Size(max = 500, message = "Description cannot exceed 500 characters")
     private String description;
 
-    @NotBlank(message = "Status is required (Pending, In Progress, Completed)")
-    private String status; 
+    @NotNull(message = "Status is required (Pending, In_Progress, Completed)")
+    private Status status; 
 
     @NotNull(message = "Start date is required")
     @FutureOrPresent(message = "Start date cannot be in the past")

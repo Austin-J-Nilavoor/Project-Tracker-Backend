@@ -2,10 +2,11 @@ package com.example.Project_Tracker.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 import java.time.LocalDateTime;
+
+import com.example.Project_Tracker.enums.ProjectRole;
 
 @Getter
 @Setter
@@ -26,12 +27,8 @@ public class ProjectMemberDto {
     @NotBlank(message = "User name is required")
     private String userName;
 
-    @NotBlank(message = "Role is required (e.g., PROJECT_MANAGER, DEVELOPER, TESTER)")
-    @Pattern(
-        regexp = "PROJECT_MANAGER|DEVELOPER|TESTER|DESIGNER|ANALYST",
-        message = "Role must be one of: PROJECT_MANAGER, DEVELOPER, TESTER, DESIGNER, ANALYST"
-    )
-    private String role;
+    @NotNull(message = "Role is required (e.g., PROJECT_MANAGER, DEVELOPER, TESTER)")
+    private ProjectRole role;
 
     @NotNull(message = "Join date is required")
     private LocalDateTime joinedAt;

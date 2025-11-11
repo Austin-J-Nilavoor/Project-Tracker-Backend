@@ -1,6 +1,6 @@
 package com.example.Project_Tracker.enums;
 
-public enum TaskPriority {
+public enum Priority {
     LOW,
     MEDIUM,
     HIGH,

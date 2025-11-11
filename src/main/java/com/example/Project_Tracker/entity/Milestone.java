@@ -7,6 +7,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.example.Project_Tracker.enums.Status;
+
 @Entity
 @Table(name = "milestones")
 @Getter
@@ -34,8 +36,9 @@ public class Milestone {
     private LocalDate startDate;
     private LocalDate endDate;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 25)
-    private String status; // Planned, Active, Completed
+    private Status status; 
 
     @Builder.Default
     private Integer progress = 0;
