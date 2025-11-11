@@ -3,10 +3,15 @@ package com.example.Project_Tracker.service;
 import com.example.Project_Tracker.dto.MilestoneDto;
 import com.example.Project_Tracker.entity.Milestone;
 import com.example.Project_Tracker.entity.Project;
+import com.example.Project_Tracker.entity.User;
 import com.example.Project_Tracker.repository.MilestoneRepository;
+import com.example.Project_Tracker.repository.ProjectMemberRepository;
 import com.example.Project_Tracker.repository.ProjectRepository;
+import com.example.Project_Tracker.repository.UserRepository;
 import com.example.Project_Tracker.utils.MapperUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -19,9 +24,11 @@ public class MilestoneService {
 
     private final MilestoneRepository milestoneRepository;
     private final ProjectRepository projectRepository;
+    private final ProjectMemberRepository projectMemberRepository;
+    private final UserRepository userRepository;
     private final MapperUtils mapperUtils;
 
-    // ✅ Get milestones by project
+    // ✅ Get all milestones for a project
     public List<MilestoneDto> getMilestonesByProject(String projectId) {
         return milestoneRepository.findByProject_Id(projectId)
                 .stream()
@@ -29,8 +36,10 @@ public class MilestoneService {
                 .collect(Collectors.toList());
     }
 
-    // ✅ Create milestone from DTO
+    // ✅ Create milestone — only Manager or Project Manager allowed
     public MilestoneDto createMilestone(MilestoneDto dto) {
+        authorizeProjectAccess(dto.getProjectId());
+
         Milestone milestone = convertToEntity(dto);
 
         if (dto.getDependsOnId() != null) {
@@ -38,15 +47,19 @@ public class MilestoneService {
                     .orElseThrow(() -> new RuntimeException("Dependency milestone not found"));
             milestone.setDependsOn(dependency);
         }
+
         milestone.setCreatedAt(LocalDateTime.now());
         Milestone saved = milestoneRepository.save(milestone);
         return convertToDto(saved);
     }
 
-    // ✅ Update milestone from DTO
+    // ✅ Update milestone — only Manager or Project Manager allowed
     public MilestoneDto updateMilestone(String id, MilestoneDto dto) {
         Milestone existing = milestoneRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Milestone not found"));
+
+        // Authorization check using project ID
+        authorizeProjectAccess(existing.getProject().getId());
 
         existing.setName(dto.getName());
         existing.setDescription(dto.getDescription());
@@ -61,26 +74,45 @@ public class MilestoneService {
         } else {
             existing.setDependsOn(null);
         }
+
         if ("IN_PROGRESS".equalsIgnoreCase(dto.getStatus())) {
             if (existing.getDependsOn() != null &&
                     !"COMPLETED".equalsIgnoreCase(existing.getDependsOn().getStatus())) {
                 throw new RuntimeException("Cannot start this milestone until the dependent one is completed");
             }
         }
+
         existing.setUpdatedAt(LocalDateTime.now());
         Milestone updated = milestoneRepository.save(existing);
         return convertToDto(updated);
     }
 
-    // ✅ Delete milestone safely
+    // ✅ Delete milestone — only Manager or Project Manager allowed
     public void deleteMilestone(String id) {
-        if (!milestoneRepository.existsById(id)) {
-            throw new RuntimeException("Milestone not found");
-        }
+        Milestone milestone = milestoneRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Milestone not found"));
+
+        // Authorization check using project ID
+        authorizeProjectAccess(milestone.getProject().getId());
+
         milestoneRepository.deleteById(id);
     }
 
-    // ✅ Entity → DTO
+    // ✅ Common method — Authorize current user for a given project
+    private void authorizeProjectAccess(String projectId) {
+        User currentUser = userRepository.findByEmail(
+                SecurityContextHolder.getContext().getAuthentication().getName()
+        ).orElseThrow(() -> new RuntimeException("User not found"));
+
+        boolean isProjectManager = projectMemberRepository
+                .existsById_ProjectIdAndUser_IdAndRoleInProject(projectId, currentUser.getId(), "PROJECT_MANAGER");
+
+        if (!currentUser.getRole().equalsIgnoreCase("MANAGER") && !isProjectManager) {
+            throw new AccessDeniedException("You are not authorized to access or modify milestones for this project");
+        }
+    }
+
+    // ✅ Entity → DTO conversion
     private MilestoneDto convertToDto(Milestone milestone) {
         MilestoneDto dto = mapperUtils.map(milestone, MilestoneDto.class);
 
@@ -97,7 +129,7 @@ public class MilestoneService {
         return dto;
     }
 
-    // ✅ DTO → Entity
+    // ✅ DTO → Entity conversion
     private Milestone convertToEntity(MilestoneDto dto) {
         Milestone milestone = mapperUtils.map(dto, Milestone.class);
 

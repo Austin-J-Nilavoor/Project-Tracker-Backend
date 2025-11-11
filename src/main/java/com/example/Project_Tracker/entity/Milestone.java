@@ -37,6 +37,7 @@ public class Milestone {
     @Column(length = 25)
     private String status; // Planned, Active, Completed
 
+    @Builder.Default
     private Integer progress = 0;
 
     @ManyToOne(fetch = FetchType.LAZY)

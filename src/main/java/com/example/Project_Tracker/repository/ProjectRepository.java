@@ -9,12 +9,17 @@ import java.util.List;
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, String> {
 
-    List<Project> findByManager_Id(String managerId);
+    // List<Project> findByManager_Id(String managerId);
 
     List<Project> findByIbu_Id(String ibuId);
+
+    List<Project> findByMembers_User_Id(String userId);
 
     List<Project> findByStatus(String status);
 
     List<Project> findByCreatedBy_Id(String userId);
-     boolean existsByIbu_Id(String ibuId);
+
+    boolean existsByIbu_Id(String ibuId);
+
+
 }

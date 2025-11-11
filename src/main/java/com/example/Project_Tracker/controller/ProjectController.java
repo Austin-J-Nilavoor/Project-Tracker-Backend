@@ -96,18 +96,18 @@ public class ProjectController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/manager/{managerId}")
-    public ResponseEntity<ApiResponse<List<ProjectDto>>> getProjectsByManager(@PathVariable String managerId) {
-        List<ProjectDto> projects = projectService.getProjectsByManager(managerId);
+    // @GetMapping("/manager/{managerId}")
+    // public ResponseEntity<ApiResponse<List<ProjectDto>>> getProjectsByManager(@PathVariable String managerId) {
+    //     List<ProjectDto> projects = projectService.getProjectsByManager(managerId);
 
-        ApiResponse<List<ProjectDto>> response = ApiResponse.<List<ProjectDto>>builder()
-                .statusCode(HttpStatus.OK.value())
-                .success(true)
-                .message("Projects for manager fetched successfully")
-                .data(projects)
-                .timestamp(LocalDateTime.now())
-                .build();
+    //     ApiResponse<List<ProjectDto>> response = ApiResponse.<List<ProjectDto>>builder()
+    //             .statusCode(HttpStatus.OK.value())
+    //             .success(true)
+    //             .message("Projects for manager fetched successfully")
+    //             .data(projects)
+    //             .timestamp(LocalDateTime.now())
+    //             .build();
 
-        return ResponseEntity.ok(response);
-    }
+    //     return ResponseEntity.ok(response);
+    // }
 }

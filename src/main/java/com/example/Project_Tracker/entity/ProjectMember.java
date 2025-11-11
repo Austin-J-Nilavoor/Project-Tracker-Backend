@@ -13,7 +13,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class ProjectMember {
-
+    
+    @Builder.Default
     @EmbeddedId
     private ProjectMemberId id = new ProjectMemberId();
 

@@ -9,6 +9,7 @@ import com.example.Project_Tracker.repository.ProjectRepository;
 import com.example.Project_Tracker.repository.UserRepository;
 import com.example.Project_Tracker.utils.MapperUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,13 +22,34 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final IbuRepository ibuRepository;
-    private final UserRepository userRepository;
+    private final UserRepository userRepository; // ✅ FIXED
     private final MapperUtils mapperUtils;
 
-    // ✅ Get all projects
+    // ✅ Get all projects based on role
     public List<ProjectDto> getAllProjects() {
-        return projectRepository.findAll()
-                .stream()
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<Project> projects;
+
+        switch (currentUser.getRole().toUpperCase()) {
+            case "ADMIN":
+                projects = projectRepository.findAll();
+                break;
+
+            case "MANAGER":
+                if (currentUser.getIbu() == null)
+                    throw new RuntimeException("Manager is not associated with any IBU");
+                projects = projectRepository.findByIbu_Id(currentUser.getIbu().getId());
+                break;
+
+            default:
+                projects = projectRepository.findByMembers_User_Id(currentUser.getId());
+                break;
+        }
+
+        return projects.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
@@ -39,15 +61,27 @@ public class ProjectService {
         return convertToDto(project);
     }
 
-    // ✅ Create project from DTO
+    // ✅ Create project
     public ProjectDto createProjectFromDto(ProjectDto dto) {
         Project project = convertToEntity(dto);
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (currentUser.getIbu() == null)
+            throw new RuntimeException("User is not associated with any IBU");
+
+        project.setIbu(currentUser.getIbu());
+        project.setCreatedBy(currentUser);
         project.setCreatedAt(LocalDateTime.now());
+        project.setUpdatedAt(LocalDateTime.now());
+
         Project saved = projectRepository.save(project);
         return convertToDto(saved);
     }
 
-    // ✅ Update project from DTO
+    // ✅ Update project
     public ProjectDto updateProjectFromDto(String id, ProjectDto dto) {
         Project existing = projectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
@@ -57,71 +91,31 @@ public class ProjectService {
         existing.setStatus(dto.getStatus());
         existing.setPriority(dto.getPriority());
         existing.setEndDate(dto.getEndDate());
-
-        if (dto.getManagerId() != null) {
-            User manager = userRepository.findById(dto.getManagerId())
-                    .orElseThrow(() -> new RuntimeException("Manager not found"));
-            existing.setManager(manager);
-        }
-
-        if (dto.getIbuId() != null) {
-            Ibu ibu = ibuRepository.findById(dto.getIbuId())
-                    .orElseThrow(() -> new RuntimeException("IBU not found"));
-            existing.setIbu(ibu);
-        }
         existing.setUpdatedAt(LocalDateTime.now());
+
         Project updated = projectRepository.save(existing);
         return convertToDto(updated);
     }
 
     // ✅ Delete project
     public void deleteProject(String id) {
-        if (!projectRepository.existsById(id)) {
+        if (!projectRepository.existsById(id))
             throw new RuntimeException("Project not found");
-        }
         projectRepository.deleteById(id);
     }
 
-    // ✅ Projects by manager
-    public List<ProjectDto> getProjectsByManager(String managerId) {
-        return projectRepository.findByManager_Id(managerId)
-                .stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
-    }
-
-    // ✅ Entity → DTO conversion
+    // ✅ Entity → DTO
     private ProjectDto convertToDto(Project project) {
         ProjectDto dto = mapperUtils.map(project, ProjectDto.class);
 
-        if (project.getIbu() != null) {
-            dto.setIbuId(project.getIbu().getId());
-            dto.setIbuName(project.getIbu().getName());
-        }
 
-        if (project.getManager() != null) {
-            dto.setManagerId(project.getManager().getId());
-            dto.setManagerName(project.getManager().getName());
-        }
 
         return dto;
     }
 
-    // ✅ DTO → Entity conversion
+    // ✅ DTO → Entity
     private Project convertToEntity(ProjectDto dto) {
         Project project = mapperUtils.map(dto, Project.class);
-
-        if (dto.getIbuId() != null) {
-            Ibu ibu = ibuRepository.findById(dto.getIbuId())
-                    .orElseThrow(() -> new RuntimeException("IBU not found"));
-            project.setIbu(ibu);
-        }
-
-        if (dto.getManagerId() != null) {
-            User manager = userRepository.findById(dto.getManagerId())
-                    .orElseThrow(() -> new RuntimeException("Manager not found"));
-            project.setManager(manager);
-        }
 
         return project;
     }

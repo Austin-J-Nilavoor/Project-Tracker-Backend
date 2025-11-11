@@ -6,6 +6,9 @@ import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.example.Project_Tracker.enums.TaskPriority;
+import com.example.Project_Tracker.enums.TaskStatus;
+
 @Entity
 @Table(name = "tasks")
 @Getter
@@ -47,10 +50,10 @@ public class Task {
     private String description;
 
     @Column(length = 25)
-    private String status; // To Do, In Progress, Review, Completed
+    private TaskStatus status; // To Do, In Progress, Review, Completed
 
     @Column(length = 15)
-    private String priority;
+    private TaskPriority priority;
 
     private LocalDate dueDate;
 

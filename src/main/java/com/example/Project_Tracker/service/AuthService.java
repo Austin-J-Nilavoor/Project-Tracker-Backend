@@ -3,6 +3,7 @@ package com.example.Project_Tracker.service;
 import com.example.Project_Tracker.dto.AuthRequest;
 import com.example.Project_Tracker.dto.AuthResponse;
 import com.example.Project_Tracker.dto.RegisterRequest;
+import com.example.Project_Tracker.dto.UserDto;
 import com.example.Project_Tracker.entity.Ibu;
 import com.example.Project_Tracker.entity.User;
 import com.example.Project_Tracker.repository.IbuRepository;
@@ -21,11 +22,12 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final IbuRepository ibuRepository;
 
-    public User register(RegisterRequest request) {
-    if (userRepository.existsByEmail(request.getEmail())) {
-        throw new RuntimeException("User with email '" + request.getEmail() + "' already exists");
-    }
-                Ibu ibu = ibuRepository.findByName(request.getIbuName())
+    public UserDto register(RegisterRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("User with email '" + request.getEmail() + "' already exists");
+        }
+
+        Ibu ibu = ibuRepository.findByName(request.getIbuName())
                 .orElseThrow(() -> new RuntimeException("IBU not found with name: " + request.getIbuName()));
 
         User user = User.builder()
@@ -35,7 +37,18 @@ public class AuthService {
                 .role(request.getRole())
                 .ibu(ibu)
                 .build();
-        return userRepository.save(user);
+
+        userRepository.save(user);
+
+        // 🔹 Return DTO (flattened structure)
+        return UserDto.builder()
+                .id(user.getId().toString())
+                .name(user.getName())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .ibuId(ibu.getId().toString())
+                .ibuName(ibu.getName())
+                .build();
     }
 
     public AuthResponse login(AuthRequest request) {

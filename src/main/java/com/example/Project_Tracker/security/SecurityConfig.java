@@ -33,18 +33,23 @@ public class SecurityConfig {
 
                         // Admin routes
                         .requestMatchers("/api/auth/register").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.POST,"/api/ibus/**").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE,"/api/ibus/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/ibus/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/ibus/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/ibus/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/users/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/users/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasAuthority("ADMIN")
 
                         // Manager routes
-                        .requestMatchers("/api/projects/**").hasAnyAuthority("MANAGER", "ADMIN")
-                        .requestMatchers("/api/milestones/**").hasAnyAuthority("MANAGER", "PROJECT_MANAGER")
-                        .requestMatchers("/api/members/**").hasAnyAuthority("MANAGER", "PROJECT_MANAGER")
+                        .requestMatchers(HttpMethod.POST, "/api/projects/**").hasAnyAuthority("MANAGER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/projects/**").hasAnyAuthority("MANAGER", "ADMIN")
+                        // .requestMatchers(HttpMethod.GET, "/api/projects/**")
+                        // .hasAnyAuthority("MANAGER", "ADMIN", "EMPLOYEE")
+                        .requestMatchers("/api/milestones/**").hasAnyAuthority("MANAGER", "EMPLOYEE")
+                        .requestMatchers("/api/members/**").hasAnyAuthority("MANAGER", "EMPLOYEE")
 
                         // Employee routes
-                        .requestMatchers("/api/tasks/**").hasAnyAuthority("EMPLOYEE", "PROJECT_MANAGER", "MANAGER")
+                        .requestMatchers("/api/tasks/**").hasAnyAuthority("EMPLOYEE", "MANAGER")
 
                         // All others
                         .anyRequest().authenticated())

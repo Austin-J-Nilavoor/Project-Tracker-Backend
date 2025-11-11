@@ -1,6 +1,8 @@
 package com.example.Project_Tracker.repository;
 
 import com.example.Project_Tracker.entity.Task;
+import com.example.Project_Tracker.enums.TaskStatus;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,5 +17,5 @@ public interface TaskRepository extends JpaRepository<Task, String> {
 
     List<Task> findByAssignedTo_Id(String userId);
 
-    List<Task> findByStatus(String status);
+    List<Task> findByStatus(TaskStatus status);
 }

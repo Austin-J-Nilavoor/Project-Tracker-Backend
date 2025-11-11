@@ -10,6 +10,8 @@ import com.example.Project_Tracker.repository.ProjectRepository;
 import com.example.Project_Tracker.repository.UserRepository;
 import com.example.Project_Tracker.utils.MapperUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -26,8 +28,6 @@ public class ProjectMemberService {
     private final UserRepository userRepository;
     private final MapperUtils mapperUtils;
 
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
     // ✅ Get all members of a project
     public List<ProjectMemberDto> getMembersByProject(String projectId) {
         return projectMemberRepository.findByProject_Id(projectId)
@@ -36,10 +36,18 @@ public class ProjectMemberService {
                 .collect(Collectors.toList());
     }
 
-    // ✅ Add a new project member
+    // ✅ Add a new project member (Manager or Project Manager only)
     public ProjectMemberDto addMember(ProjectMemberDto dto) {
+        User currentUser = getCurrentUser();
+
         Project project = projectRepository.findById(dto.getProjectId())
                 .orElseThrow(() -> new RuntimeException("Project not found"));
+
+        // 🔒 Allow only Manager or Project Manager
+        if (!hasManagerPrivileges(currentUser, project.getId())) {
+            throw new AccessDeniedException("You are not authorized to add members to this project");
+        }
+
         User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -53,8 +61,15 @@ public class ProjectMemberService {
         return convertToDto(saved);
     }
 
-    // ✅ Remove a project member
+    // ✅ Remove a project member (Manager or Project Manager only)
     public void removeMember(String projectId, String userId) {
+        User currentUser = getCurrentUser();
+
+        // 🔒 Allow only Manager or Project Manager
+        if (!hasManagerPrivileges(currentUser, projectId)) {
+            throw new AccessDeniedException("You are not authorized to remove members from this project");
+        }
+
         ProjectMemberId id = new ProjectMemberId(projectId, userId);
         if (!projectMemberRepository.existsById(id)) {
             throw new RuntimeException("Project member not found");
@@ -77,9 +92,28 @@ public class ProjectMemberService {
         }
 
         if (member.getJoinedAt() != null) {
-            dto.setJoinedAt(member.getJoinedAt().format(formatter));
+            dto.setJoinedAt(member.getJoinedAt());
         }
 
         return dto;
+    }
+
+    // ✅ Utility — get current logged-in user
+    private User getCurrentUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    // ✅ Utility — check if user is Manager or Project Manager for given project
+    private boolean hasManagerPrivileges(User user, String projectId) {
+        // Allow if global MANAGER role
+        if ("MANAGER".equalsIgnoreCase(user.getRole())) {
+            return true;
+        }
+
+        // Otherwise, check if Project Member with Project Manager role
+        return projectMemberRepository
+                .existsById_ProjectIdAndUser_IdAndRoleInProject(projectId, user.getId(), "PROJECT_MANAGER");
     }
 }

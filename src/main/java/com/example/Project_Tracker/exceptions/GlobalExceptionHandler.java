@@ -17,64 +17,76 @@ import java.util.Map;
 @RestControllerAdvice // works for @RestController automatically
 public class GlobalExceptionHandler {
 
-    // ✅ Generic exception handler
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<String>> handleGenericException(Exception ex) {
-        ApiResponse<String> response = ApiResponse.<String>builder()
-                .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .success(false)
-                .message(ex.getMessage())
-                .data(null)
-                .timestamp(LocalDateTime.now())
-                .build();
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+        // ✅ Generic exception handler
+        @ExceptionHandler(Exception.class)
+        public ResponseEntity<ApiResponse<String>> handleGenericException(Exception ex) {
+                ApiResponse<String> response = ApiResponse.<String>builder()
+                                .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                                .success(false)
+                                .message(ex.getMessage())
+                                .data(null)
+                                .timestamp(LocalDateTime.now())
+                                .build();
+                return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
-    // ✅ Handle validation errors (e.g., @Valid)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationErrors(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(err ->
-                errors.put(err.getField(), err.getDefaultMessage())
-        );
+        // ✅ Handle validation errors (e.g., @Valid)
+        @ExceptionHandler(MethodArgumentNotValidException.class)
+        public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationErrors(
+                        MethodArgumentNotValidException ex) {
+                Map<String, String> errors = new HashMap<>();
+                ex.getBindingResult().getFieldErrors()
+                                .forEach(err -> errors.put(err.getField(), err.getDefaultMessage()));
 
-        ApiResponse<Map<String, String>> response = ApiResponse.<Map<String, String>>builder()
-                .statusCode(HttpStatus.BAD_REQUEST.value())
-                .success(false)
-                .message("Validation failed")
-                .data(errors)
-                .timestamp(LocalDateTime.now())
-                .build();
+                ApiResponse<Map<String, String>> response = ApiResponse.<Map<String, String>>builder()
+                                .statusCode(HttpStatus.BAD_REQUEST.value())
+                                .success(false)
+                                .message("Validation failed")
+                                .data(errors)
+                                .timestamp(LocalDateTime.now())
+                                .build();
 
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-    }
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
 
-    // ✅ Custom exception example
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiResponse<String>> handleResourceNotFound(ResourceNotFoundException ex) {
-         System.out.println("🟢 Handling ResourceNotFoundException: " + ex.getMessage());
-        ApiResponse<String> response = ApiResponse.<String>builder()
-                .statusCode(HttpStatus.NOT_FOUND.value())
-                .success(false)
-                .message(ex.getMessage())
-                .data(null)
-                .timestamp(LocalDateTime.now())
-                .build();
+        // ✅ Custom exception example
+        @ExceptionHandler(ResourceNotFoundException.class)
+        public ResponseEntity<ApiResponse<String>> handleResourceNotFound(ResourceNotFoundException ex) {
+                System.out.println("🟢 Handling ResourceNotFoundException: " + ex.getMessage());
+                ApiResponse<String> response = ApiResponse.<String>builder()
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .success(false)
+                                .message(ex.getMessage())
+                                .data(null)
+                                .timestamp(LocalDateTime.now())
+                                .build();
 
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-    }
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
 
-@ExceptionHandler(DataIntegrityViolationException.class)
-public ResponseEntity<ApiResponse<String>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-    ApiResponse<String> response = ApiResponse.<String>builder()
-            .statusCode(HttpStatus.CONFLICT.value())
-            .success(false)
-            .message("Cannot delete this IBU because it is linked to existing users or projects.")
-            .data(null)
-            .timestamp(LocalDateTime.now())
-            .build();
+        @ExceptionHandler(DataIntegrityViolationException.class)
+        public ResponseEntity<ApiResponse<String>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+                String message;
 
-    return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
-}
+                if (ex.getMessage().contains("not-null")) {
+                        message = "A required field is missing or null.";
+                } else if (ex.getMessage().contains("foreign key")) {
+                        message = "Cannot delete or modify this record because it is linked to other data.";
+                } else if (ex.getMessage().contains("unique")) {
+                        message = "Duplicate value detected. This record already exists.";
+                } else {
+                        message = "Data integrity violation occurred.";
+                }
+
+                ApiResponse<String> response = ApiResponse.<String>builder()
+                                .statusCode(HttpStatus.CONFLICT.value())
+                                .success(false)
+                                .message(message)
+                                .data(null)
+                                .timestamp(LocalDateTime.now())
+                                .build();
+
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        }
 
 }

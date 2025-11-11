@@ -2,6 +2,7 @@ package com.example.Project_Tracker.controller;
 
 import com.example.Project_Tracker.dto.ApiResponse;
 import com.example.Project_Tracker.dto.TaskDto;
+import com.example.Project_Tracker.enums.TaskStatus;
 import com.example.Project_Tracker.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -79,7 +80,7 @@ public class TaskController {
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<ApiResponse<TaskDto>> updateTaskStatus(@PathVariable String id, @RequestParam String status) {
+    public ResponseEntity<ApiResponse<TaskDto>> updateTaskStatus(@PathVariable String id, @RequestParam TaskStatus status) {
         TaskDto updated = taskService.updateTaskStatus(id, status);
 
         ApiResponse<TaskDto> response = ApiResponse.<TaskDto>builder()

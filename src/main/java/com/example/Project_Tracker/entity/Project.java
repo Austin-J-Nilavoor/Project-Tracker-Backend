@@ -40,9 +40,9 @@ public class Project {
     @Column(length = 15)
     private String priority; // Low, Medium, High, Critical
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "manager_user_id", nullable = false)
-    private User manager;
+    // @ManyToOne(fetch = FetchType.LAZY)
+    // @JoinColumn(name = "manager_user_id", nullable = false)
+    // private User manager;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")

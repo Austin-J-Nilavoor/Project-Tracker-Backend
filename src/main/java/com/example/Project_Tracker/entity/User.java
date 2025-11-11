@@ -39,8 +39,7 @@ public class User {
     private final LocalDateTime createdAt = LocalDateTime.now();
     private final LocalDateTime updatedAt = LocalDateTime.now();
 
-    @OneToMany(mappedBy = "manager", cascade = CascadeType.ALL)
-    private List<Project> managedProjects;
+
 
     @OneToMany(mappedBy = "assignedTo")
     private List<Task> assignedTasks;

@@ -7,6 +7,8 @@ import com.example.Project_Tracker.repository.IbuRepository;
 import com.example.Project_Tracker.repository.UserRepository;
 import com.example.Project_Tracker.utils.MapperUtils;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,9 +22,31 @@ public class UserService {
     private final IbuRepository ibuRepository;
     private final MapperUtils mapperUtils;
 
-    // ✅ Get all users
     public List<UserDto> getAllUsers() {
-        return userRepository.findAll().stream()
+        // Get logged-in user details
+
+        String loggedInEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        // Find user in DB
+        User currentUser = userRepository.findByEmail(loggedInEmail)
+                .orElseThrow(() -> new RuntimeException("Logged-in user not found"));
+
+        List<User> users;
+
+        // ✅ If Admin → get all users
+        if ("ADMIN".equalsIgnoreCase(currentUser.getRole())) {
+            users = userRepository.findAll();
+        }
+        // ✅ Else → get only users in same IBU
+        else if (currentUser.getIbu() != null) {
+            users = userRepository.findByIbu_Id(currentUser.getIbu().getId());
+        }
+        // ✅ If user has no IBU (edge case)
+        else {
+            users = List.of(currentUser);
+        }
+
+        return users.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
