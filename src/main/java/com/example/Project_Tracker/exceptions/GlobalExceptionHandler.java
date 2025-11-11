@@ -4,11 +4,13 @@ import com.example.Project_Tracker.dto.ApiResponse;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 // import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -87,6 +89,21 @@ public class GlobalExceptionHandler {
                                 .build();
 
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        }
+
+        @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+        public ResponseEntity<ApiResponse<String>> handleResponseStatusException(ResponseStatusException ex) {
+                HttpStatusCode status = ex.getStatusCode();
+
+                ApiResponse<String> response = ApiResponse.<String>builder()
+                                .statusCode(status.value())
+                                .success(false)
+                                .message(ex.getReason()) // shows your custom message
+                                .data(null)
+                                .timestamp(LocalDateTime.now())
+                                .build();
+
+                return new ResponseEntity<>(response, status);
         }
 
 }

@@ -10,8 +10,11 @@ import com.example.Project_Tracker.repository.IbuRepository;
 import com.example.Project_Tracker.repository.UserRepository;
 import com.example.Project_Tracker.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -23,12 +26,17 @@ public class AuthService {
     private final IbuRepository ibuRepository;
 
     public UserDto register(RegisterRequest request) {
+
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("User with email '" + request.getEmail() + "' already exists");
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "User with email '" + request.getEmail() + "' already exists");
         }
 
         Ibu ibu = ibuRepository.findByName(request.getIbuName())
-                .orElseThrow(() -> new RuntimeException("IBU not found with name: " + request.getIbuName()));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "IBU not found with name: " + request.getIbuName()));
 
         User user = User.builder()
                 .name(request.getName())
