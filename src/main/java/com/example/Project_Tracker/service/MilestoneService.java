@@ -52,7 +52,7 @@ public class MilestoneService {
             milestone.setDependsOn(dependency);
         }
 
-        milestone.setCreatedAt(LocalDateTime.now());
+        // milestone.setCreatedAt(LocalDateTime.now());
         Milestone saved = milestoneRepository.save(milestone);
         return convertToDto(saved);
     }

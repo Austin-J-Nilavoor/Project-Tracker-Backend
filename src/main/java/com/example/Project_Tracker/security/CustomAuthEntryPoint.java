@@ -25,7 +25,7 @@ public class CustomAuthEntryPoint implements AuthenticationEntryPoint {
                 .success(false)
                 .message("Unauthorized access — please log in to continue.")
                 .data(null)
-                .timestamp(LocalDateTime.now())
+                .timestamp(null)
                 .build();
 
         response.setContentType("application/json");

@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -32,7 +31,7 @@ public class IbuService {
 
     public IbuDto createIbu(IbuDto ibuDto) {
         Ibu ibu = mapperUtils.map(ibuDto, Ibu.class);
-        ibu.setCreatedAt(LocalDateTime.now());
+        // ibu.setCreatedAt(LocalDateTime.now());
         Ibu savedIbu = ibuRepository.save(ibu);
         return mapperUtils.map(savedIbu, IbuDto.class);
     }

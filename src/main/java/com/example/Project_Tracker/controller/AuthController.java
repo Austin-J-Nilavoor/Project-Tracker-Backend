@@ -35,7 +35,7 @@ public class AuthController {
                 .timestamp(LocalDateTime.now())
                 .build();
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
 @PostMapping("/login")

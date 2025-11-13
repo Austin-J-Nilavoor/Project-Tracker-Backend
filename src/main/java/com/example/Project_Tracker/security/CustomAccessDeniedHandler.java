@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 @Component
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
@@ -24,7 +25,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
                 .success(false)
                 .message("Access denied — you do not have permission for this action.")
                 .data(null)
-                .timestamp(null)
+                .timestamp(LocalDateTime.now())
                 .build();
 
         response.setContentType("application/json");

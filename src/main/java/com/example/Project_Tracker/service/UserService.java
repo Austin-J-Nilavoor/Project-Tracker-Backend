@@ -75,7 +75,7 @@ public class UserService {
         } else {
             existingUser.setIbu(null);
         }
-
+        existingUser.setUpdatedAt(java.time.LocalDateTime.now());
         User updatedUser = userRepository.save(existingUser);
         return convertToDto(updatedUser);
     }

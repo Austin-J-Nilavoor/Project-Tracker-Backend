@@ -161,4 +161,47 @@ public class GlobalExceptionHandler {
                 return new ResponseEntity<>(response, HttpStatus.CONFLICT);
         }
 
+        @ExceptionHandler(InvalidCredentialsException.class)
+        public ResponseEntity<ApiResponse<String>> handleInvalidCredentials(InvalidCredentialsException ex) {
+
+                ApiResponse<String> response = ApiResponse.<String>builder()
+                                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                                .success(false)
+                                .message(ex.getMessage())
+                                .data(null)
+                                .timestamp(LocalDateTime.now())
+                                .build();
+
+                return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        }
+
+        // ✅ Handle Bad Request (400) - For general business logic errors
+        @ExceptionHandler(BadRequestException.class)
+        public ResponseEntity<ApiResponse<String>> handleBadRequest(BadRequestException ex) {
+
+                ApiResponse<String> response = ApiResponse.<String>builder()
+                                .statusCode(HttpStatus.BAD_REQUEST.value())
+                                .success(false)
+                                .message(ex.getMessage())
+                                .data(null)
+                                .timestamp(LocalDateTime.now())
+                                .build();
+
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        // ✅ Handle Conflict/State Error (409) - For dependency/state violations
+        @ExceptionHandler(ConflictException.class)
+        public ResponseEntity<ApiResponse<String>> handleConflict(ConflictException ex) {
+
+                ApiResponse<String> response = ApiResponse.<String>builder()
+                                .statusCode(HttpStatus.CONFLICT.value())
+                                .success(false)
+                                .message(ex.getMessage())
+                                .data(null)
+                                .timestamp(LocalDateTime.now())
+                                .build();
+
+                return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+        }
 }

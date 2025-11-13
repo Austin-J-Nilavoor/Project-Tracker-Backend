@@ -6,6 +6,7 @@ import com.example.Project_Tracker.dto.RegisterRequest;
 import com.example.Project_Tracker.dto.UserDto;
 import com.example.Project_Tracker.entity.Ibu;
 import com.example.Project_Tracker.entity.User;
+import com.example.Project_Tracker.exceptions.InvalidCredentialsException;
 import com.example.Project_Tracker.exceptions.ResourceNotFoundException;
 import com.example.Project_Tracker.repository.IbuRepository;
 import com.example.Project_Tracker.repository.UserRepository;
@@ -62,10 +63,10 @@ public class AuthService {
 
     public AuthResponse login(AuthRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException( "User not found"));
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid credentials"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new InvalidCredentialsException("Invalid credentials");
         }
 
         String token = jwtTokenProvider.generateToken(user);
