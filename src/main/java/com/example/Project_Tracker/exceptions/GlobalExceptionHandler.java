@@ -6,6 +6,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 // import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -54,7 +56,7 @@ public class GlobalExceptionHandler {
         // ✅ Custom exception example
         @ExceptionHandler(ResourceNotFoundException.class)
         public ResponseEntity<ApiResponse<String>> handleResourceNotFound(ResourceNotFoundException ex) {
-                
+
                 ApiResponse<String> response = ApiResponse.<String>builder()
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .success(false)
@@ -104,6 +106,59 @@ public class GlobalExceptionHandler {
                                 .build();
 
                 return new ResponseEntity<>(response, status);
+        }
+
+        @ExceptionHandler(HttpMessageNotReadableException.class)
+        public ResponseEntity<ApiResponse<String>> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+
+                String detailedMessage;
+                if (ex.getCause() != null && ex.getCause().getMessage().contains("Cannot deserialize value of type")) {
+                        detailedMessage = "Invalid value provided for an enum field.";
+                        if (ex.getCause().getMessage().contains("not from the set")) {
+                                detailedMessage = ex.getCause().getMessage();
+                        }
+                } else {
+                        detailedMessage = "Malformed JSON request or invalid data type.";
+                }
+
+                // 2. Build the consistent ApiResponse body
+                ApiResponse<String> response = ApiResponse.<String>builder()
+                                .statusCode(HttpStatus.BAD_REQUEST.value())
+                                .success(false)
+                                .message(detailedMessage)
+                                .data(null)
+                                .timestamp(LocalDateTime.now())
+                                .build();
+
+                // 3. Return the response with the 400 BAD_REQUEST status
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        @ExceptionHandler(AccessDeniedException.class)
+        public ResponseEntity<ApiResponse<String>> handleAccessDenied(AccessDeniedException ex) {
+                // Explicitly return 403 status
+                HttpStatusCode status = HttpStatus.FORBIDDEN;
+                ApiResponse<String> response = ApiResponse.<String>builder()
+                                .statusCode(status.value())
+                                .success(false)
+                                .message(ex.getMessage()) // shows your custom message
+                                .data(null)
+                                .timestamp(LocalDateTime.now())
+                                .build();
+
+                return new ResponseEntity<>(response, status);
+        }
+
+        @ExceptionHandler(MemberAlreadyExistsException.class)
+        public ResponseEntity<ApiResponse<String>> handleMemberAlreadyExists(MemberAlreadyExistsException ex) {
+                ApiResponse<String> response = ApiResponse.<String>builder()
+                                .statusCode(HttpStatus.CONFLICT.value())
+                                .success(false)
+                                .message(ex.getMessage())
+                                .timestamp(LocalDateTime.now())
+                                .build();
+
+                return new ResponseEntity<>(response, HttpStatus.CONFLICT);
         }
 
 }

@@ -51,6 +51,21 @@ public class TaskController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/milestone/{milestoneId}")
+    public ResponseEntity<ApiResponse<List<TaskDto>>> getTasksByMilestone(@PathVariable String milestoneId) {
+        List<TaskDto> tasks = taskService.getTasksByMilestone(milestoneId);
+
+        ApiResponse<List<TaskDto>> response = ApiResponse.<List<TaskDto>>builder()
+                .statusCode(HttpStatus.OK.value())
+                .success(true)
+                .message("Tasks for milestone fetched successfully")
+                .data(tasks)
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<TaskDto>> createTask(@Valid @RequestBody TaskDto taskDto) {
         TaskDto created = taskService.createTask(taskDto);
@@ -82,7 +97,8 @@ public class TaskController {
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<ApiResponse<TaskDto>> updateTaskStatus(@PathVariable String id, @RequestParam TaskStatus status) {
+    public ResponseEntity<ApiResponse<TaskDto>> updateTaskStatus(@PathVariable String id,
+            @RequestParam TaskStatus status) {
         TaskDto updated = taskService.updateTaskStatus(id, status);
 
         ApiResponse<TaskDto> response = ApiResponse.<TaskDto>builder()
@@ -109,6 +125,6 @@ public class TaskController {
                 .build();
 
         return deleted ? ResponseEntity.ok(response)
-                       : ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                : ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 }

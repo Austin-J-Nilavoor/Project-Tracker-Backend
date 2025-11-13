@@ -4,6 +4,7 @@ import com.example.Project_Tracker.dto.MilestoneDto;
 import com.example.Project_Tracker.entity.Milestone;
 import com.example.Project_Tracker.entity.Project;
 import com.example.Project_Tracker.entity.User;
+import com.example.Project_Tracker.enums.ProjectRole;
 import com.example.Project_Tracker.enums.Status;
 import com.example.Project_Tracker.exceptions.ResourceNotFoundException;
 import com.example.Project_Tracker.repository.MilestoneRepository;
@@ -108,9 +109,14 @@ public class MilestoneService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         boolean isProjectManager = projectMemberRepository
-                .existsById_ProjectIdAndUser_IdAndRoleInProject(projectId, currentUser.getId(), "PROJECT_MANAGER");
-
-        if (!currentUser.getRole().equalsIgnoreCase("MANAGER") && !isProjectManager) {
+                .existsById_ProjectIdAndUser_IdAndRoleInProject(projectId, currentUser.getId(), ProjectRole.valueOf("PROJECT_MANAGER"));
+        boolean isSameIBU = false;
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+        if (currentUser.getIbu() != null && project.getIbu() != null) {
+            isSameIBU = currentUser.getIbu().getId().equals(project.getIbu().getId());
+        }
+        if ((!currentUser.getRole().equalsIgnoreCase("MANAGER")||!isSameIBU) && !isProjectManager) {
             throw new AccessDeniedException("You are not authorized to access or modify milestones for this project");
         }
     }

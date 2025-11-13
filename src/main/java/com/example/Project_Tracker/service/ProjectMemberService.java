@@ -1,10 +1,13 @@
 package com.example.Project_Tracker.service;
 
 import com.example.Project_Tracker.dto.ProjectMemberDto;
+import com.example.Project_Tracker.entity.Ibu;
 import com.example.Project_Tracker.entity.Project;
 import com.example.Project_Tracker.entity.ProjectMember;
 import com.example.Project_Tracker.entity.ProjectMemberId;
 import com.example.Project_Tracker.entity.User;
+import com.example.Project_Tracker.enums.ProjectRole;
+import com.example.Project_Tracker.exceptions.MemberAlreadyExistsException;
 import com.example.Project_Tracker.exceptions.ResourceNotFoundException;
 import com.example.Project_Tracker.repository.ProjectMemberRepository;
 import com.example.Project_Tracker.repository.ProjectRepository;
@@ -18,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,10 +55,30 @@ public class ProjectMemberService {
 
         User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Ibu projectIbu = project.getIbu();
+        Ibu userToAddIbu = user.getIbu(); // Using 'userToAdd' instead of 'user'
+        Ibu currentUserIbu = currentUser.getIbu();
 
+        if (!projectIbu.equals(userToAddIbu)) {
+            throw new AccessDeniedException("The user (" + user.getName() +
+                    ") cannot be added as they belong to a different IBU (" + userToAddIbu.getName() +
+                    ") than the Project's IBU (" + projectIbu.getName() + ")");
+        }
+        if (!projectIbu.getId().equals(currentUserIbu.getId())) {
+            throw new AccessDeniedException("You are not authorized to add members to a project outside your IBU");
+        }
+        boolean alreadyMember = projectMemberRepository.existsById_ProjectIdAndUser_Id(
+                project.getId(),
+                user.getId());
+
+        if (alreadyMember) {
+            throw new MemberAlreadyExistsException(
+                    "The user (" + user.getName() + ") is already a member of this project.");
+        }
         ProjectMember member = new ProjectMember();
         member.setProject(project);
         member.setUser(user);
+
         member.setRoleInProject(dto.getRole());
         member.setJoinedAt(LocalDateTime.now());
 
@@ -70,7 +94,13 @@ public class ProjectMemberService {
         if (!hasManagerPrivileges(currentUser, projectId)) {
             throw new AccessDeniedException("You are not authorized to remove members from this project");
         }
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found with ID: " + projectId));
 
+        if (project.getIbu() == null || currentUser.getIbu() == null ||
+                !project.getIbu().getId().equals(currentUser.getIbu().getId())) {
+            throw new AccessDeniedException("You are not authorized to remove members from a project outside your IBU");
+        }
         ProjectMemberId id = new ProjectMemberId(projectId, userId);
         if (!projectMemberRepository.existsById(id)) {
             throw new ResourceNotFoundException("Project member not found");
@@ -90,6 +120,9 @@ public class ProjectMemberService {
         if (member.getUser() != null) {
             dto.setUserId(member.getUser().getId());
             dto.setUserName(member.getUser().getName());
+        }
+        if (member.getRoleInProject() != null) {
+            dto.setRole(member.getRoleInProject());
         }
 
         if (member.getJoinedAt() != null) {
@@ -112,9 +145,21 @@ public class ProjectMemberService {
         if ("MANAGER".equalsIgnoreCase(user.getRole())) {
             return true;
         }
+        Optional<Project> projectOpt = projectRepository.findById(projectId);
+        if (projectOpt.isEmpty()) {
+            return false; // project not found
+        }
 
+        Project project = projectOpt.get();
+
+        // Check if user belongs to same IBU as project
+        if (user.getIbu() == null || project.getIbu() == null ||
+                !user.getIbu().getId().equals(project.getIbu().getId())) {
+            return false;
+        }
         // Otherwise, check if Project Member with Project Manager role
         return projectMemberRepository
-                .existsById_ProjectIdAndUser_IdAndRoleInProject(projectId, user.getId(), "PROJECT_MANAGER");
+                .existsById_ProjectIdAndUser_IdAndRoleInProject(projectId, user.getId(),
+                        ProjectRole.valueOf("PROJECT_MANAGER"));
     }
 }

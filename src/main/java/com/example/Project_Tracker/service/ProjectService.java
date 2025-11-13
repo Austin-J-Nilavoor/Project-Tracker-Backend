@@ -31,7 +31,7 @@ public class ProjectService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         List<Project> projects;
-
+System.out.println("start USER ID: " + currentUser.getName());
         switch (currentUser.getRole().toUpperCase()) {
             case "ADMIN":
                 projects = projectRepository.findAll();
@@ -44,6 +44,7 @@ public class ProjectService {
                 break;
 
             default:
+            System.out.println("USER ID: " + currentUser.getName());
                 projects = projectRepository.findByMembers_User_Id(currentUser.getId());
                 break;
         }

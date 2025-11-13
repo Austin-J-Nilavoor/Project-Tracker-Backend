@@ -18,18 +18,15 @@ public class ProjectMemberDto {
     @NotBlank(message = "Project ID is required")
     private String projectId;
 
-    @NotBlank(message = "Project name is required")
     private String projectName;
 
     @NotBlank(message = "User ID is required")
     private String userId;
 
-    @NotBlank(message = "User name is required")
     private String userName;
 
     @NotNull(message = "Role is required (e.g., PROJECT_MANAGER, DEVELOPER, TESTER)")
     private ProjectRole role;
 
-    @NotNull(message = "Join date is required")
     private LocalDateTime joinedAt;
 }

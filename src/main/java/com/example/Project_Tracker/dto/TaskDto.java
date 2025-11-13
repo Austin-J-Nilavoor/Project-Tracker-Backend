@@ -23,7 +23,7 @@ public class TaskDto {
     @NotBlank(message = "Task description is required")
     private String description;
 
-   @NotNull(message = "Task status is required")
+    @NotNull(message = "Task status is required")
     private TaskStatus status;
 
     @NotNull(message = "Task priority is required")
@@ -39,6 +39,9 @@ public class TaskDto {
 
     private String projectName; // optional (read-only convenience for frontend)
 
-    private String assignedToId;   // optional — may be unassigned
-    private String assignedToName; // optional — for frontend display
+    private String assignedToId;
+    private String assignedToName;
+
+    @NotBlank(message = "Milestone ID is required")
+    private String milestoneID;
 }
