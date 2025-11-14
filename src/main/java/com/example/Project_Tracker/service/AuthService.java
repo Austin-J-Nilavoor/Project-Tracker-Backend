@@ -6,12 +6,15 @@ import com.example.Project_Tracker.dto.RegisterRequest;
 import com.example.Project_Tracker.dto.UserDto;
 import com.example.Project_Tracker.entity.Ibu;
 import com.example.Project_Tracker.entity.User;
+import com.example.Project_Tracker.exceptions.ConflictException;
 import com.example.Project_Tracker.exceptions.InvalidCredentialsException;
 import com.example.Project_Tracker.exceptions.ResourceNotFoundException;
 import com.example.Project_Tracker.repository.IbuRepository;
 import com.example.Project_Tracker.repository.UserRepository;
 import com.example.Project_Tracker.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,16 +33,23 @@ public class AuthService {
     public UserDto register(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
+            throw new ConflictException(
                     "User with email '" + request.getEmail() + "' already exists");
         }
 
         Ibu ibu = ibuRepository.findByName(request.getIbuName())
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        
-                        "IBU not found with name: " + request.getIbuName()));
 
+                        "IBU not found with name: " + request.getIbuName()));
+        if ("MANAGER".equalsIgnoreCase(request.getRole())) {
+            // You'll need a new repository method like findByRoleAndIbu_Id
+            List<User> existingManagers = userRepository.findByRoleAndIbu_Id("MANAGER", ibu.getId());
+
+            if (!existingManagers.isEmpty()) {
+                throw new ConflictException(
+                        "IBU '" + ibu.getName() + "' already has a manager assigned.");
+            }
+        }
         User user = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
@@ -73,6 +83,4 @@ public class AuthService {
         return new AuthResponse(token, user.getRole(), user.getName());
     }
 
-
-    
 }

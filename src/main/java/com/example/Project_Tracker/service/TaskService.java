@@ -90,11 +90,30 @@ public class TaskService {
 
         authorizeProjectManagerOrManager(task.getProject().getId());
 
-        task.setTitle(updatedTaskDto.getTitle());
-        task.setDescription(updatedTaskDto.getDescription());
-        task.setStatus(updatedTaskDto.getStatus());
-        task.setPriority(updatedTaskDto.getPriority());
-        task.setDueDate(updatedTaskDto.getDueDate());
+// Only update the title if the DTO provided a non-null value
+        if (updatedTaskDto.getTitle() != null) {
+            task.setTitle(updatedTaskDto.getTitle());
+        }
+
+        // Only update the description if the DTO provided a non-null value
+        if (updatedTaskDto.getDescription() != null) {
+            task.setDescription(updatedTaskDto.getDescription());
+        }
+
+        // Only update the status if the DTO provided a non-null value
+        if (updatedTaskDto.getStatus() != null) {
+            task.setStatus(updatedTaskDto.getStatus());
+        }
+
+        // Only update the priority if the DTO provided a non-null value
+        if (updatedTaskDto.getPriority() != null) {
+            task.setPriority(updatedTaskDto.getPriority());
+        }
+
+        // Only update the due date if the DTO provided a non-null value
+        if (updatedTaskDto.getDueDate() != null) {
+            task.setDueDate(updatedTaskDto.getDueDate());
+        }
 
         // Optional reassignment
         if (updatedTaskDto.getAssignedToId() != null) {

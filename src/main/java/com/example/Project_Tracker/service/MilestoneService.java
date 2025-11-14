@@ -65,11 +65,30 @@ public class MilestoneService {
         // Authorization check using project ID
         authorizeProjectAccess(existing.getProject().getId());
 
-        existing.setName(dto.getName());
-        existing.setDescription(dto.getDescription());
-        existing.setStatus(dto.getStatus());
-        existing.setStartDate(dto.getStartDate());
-        existing.setEndDate(dto.getEndDate());
+// Only update the name if the DTO provided a non-null value
+        if (dto.getName() != null) {
+            existing.setName(dto.getName());
+        }
+
+        // Only update the description if the DTO provided a non-null value
+        if (dto.getDescription() != null) {
+            existing.setDescription(dto.getDescription());
+        }
+
+        // Only update the status if the DTO provided a non-null value
+        if (dto.getStatus() != null) {
+            existing.setStatus(dto.getStatus());
+        }
+
+        // Only update the start date if the DTO provided a non-null value
+        if (dto.getStartDate() != null) {
+            existing.setStartDate(dto.getStartDate());
+        }
+
+        // Only update the end date if the DTO provided a non-null value
+        if (dto.getEndDate() != null) {
+            existing.setEndDate(dto.getEndDate());
+        }
 
         if (dto.getDependsOnId() != null) {
             Milestone dependency = milestoneRepository.findById(dto.getDependsOnId())

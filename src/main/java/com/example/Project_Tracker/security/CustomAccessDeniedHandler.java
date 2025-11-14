@@ -25,7 +25,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
                 .success(false)
                 .message("Access denied — you do not have permission for this action.")
                 .data(null)
-                .timestamp(LocalDateTime.now())
+                .timestamp(null)
                 .build();
 
         response.setContentType("application/json");

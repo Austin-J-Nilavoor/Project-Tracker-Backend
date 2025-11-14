@@ -84,11 +84,31 @@ public class ProjectService {
         Project existing = projectRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
-        existing.setName(dto.getName());
-        existing.setDescription(dto.getDescription());
-        existing.setStatus(dto.getStatus());
-        existing.setPriority(dto.getPriority());
-        existing.setEndDate(dto.getEndDate());
+   // Only update the name if the DTO provided a non-null value
+        if (dto.getName() != null) {
+            existing.setName(dto.getName());
+        }
+
+        // Only update the description if the DTO provided a non-null value
+        if (dto.getDescription() != null) {
+            existing.setDescription(dto.getDescription());
+        }
+
+        // Only update the status if the DTO provided a non-null value
+        if (dto.getStatus() != null) {
+            existing.setStatus(dto.getStatus());
+        }
+
+        // Only update the priority if the DTO provided a non-null value
+        if (dto.getPriority() != null) {
+            existing.setPriority(dto.getPriority());
+        }
+
+        // Only update the end date if the DTO provided a non-null value
+        if (dto.getEndDate() != null) {
+            existing.setEndDate(dto.getEndDate());
+        }
+
         existing.setUpdatedAt(LocalDateTime.now());
 
         Project updated = projectRepository.save(existing);

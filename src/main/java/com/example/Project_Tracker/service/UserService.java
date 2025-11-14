@@ -55,22 +55,33 @@ public class UserService {
     // ✅ Get single user by ID
     public UserDto getUserById(String id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() ->  new ResourceNotFoundException( "User not found with ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
         return convertToDto(user);
     }
 
     // ✅ Update existing user
     public UserDto updateUser(String id, UserDto userDto) {
         User existingUser = userRepository.findById(id)
-                .orElseThrow(() ->  new ResourceNotFoundException( "User not found with ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
 
-        existingUser.setName(userDto.getName());
-        existingUser.setEmail(userDto.getEmail());
-        existingUser.setRole(userDto.getRole());
+        // Only update the name if the DTO provided a non-null value
+        if (userDto.getName() != null) {
+            existingUser.setName(userDto.getName());
+        }
+
+        // Only update the email if the DTO provided a non-null value
+        if (userDto.getEmail() != null) {
+            existingUser.setEmail(userDto.getEmail());
+        }
+
+        // Only update the role if the DTO provided a non-null value
+        if (userDto.getRole() != null) {
+            existingUser.setRole(userDto.getRole());
+        }
 
         if (userDto.getIbuId() != null) {
             Ibu ibu = ibuRepository.findById(userDto.getIbuId())
-                    .orElseThrow(() ->  new ResourceNotFoundException( "IBU not found with ID: " + userDto.getIbuId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("IBU not found with ID: " + userDto.getIbuId()));
             existingUser.setIbu(ibu);
         } else {
             existingUser.setIbu(null);
@@ -83,7 +94,7 @@ public class UserService {
     // ✅ Delete user
     public void deleteUser(String id) {
         if (!userRepository.existsById(id)) {
-            throw new ResourceNotFoundException( "User not found with ID: " + id);
+            throw new ResourceNotFoundException("User not found with ID: " + id);
         }
         userRepository.deleteById(id);
     }
