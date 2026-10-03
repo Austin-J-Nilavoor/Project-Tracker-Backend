@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/tasks")
 @RequiredArgsConstructor
+// @CrossOrigin
 @Tag(name = "Task Management", description = "Operations for managing project tasks (Employee/Manager scope).")
 @SecurityRequirement(name = "bearer-jwt")
 public class TaskController {

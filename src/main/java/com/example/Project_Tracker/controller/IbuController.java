@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/ibus")
 @RequiredArgsConstructor
+// @CrossOrigin
 @Tag(name = "IBU Management", description = "Operations for managing International Business Units (ADMIN only for CUD).")
 @SecurityRequirement(name = "bearer-jwt")
 public class IbuController {

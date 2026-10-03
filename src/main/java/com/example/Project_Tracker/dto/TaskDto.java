@@ -24,7 +24,7 @@ public class TaskDto {
     @Schema(description = "Title of the task", example = "Implement user authentication endpoint")
     private String title;
 
-    @NotBlank(message = "Task description is required")
+    // @NotBlank(message = "Task description is required")
     @Schema(description = "Detailed description of the task")
     private String description;
 

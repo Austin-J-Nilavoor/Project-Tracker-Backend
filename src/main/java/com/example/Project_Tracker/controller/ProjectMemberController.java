@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/members")
 @RequiredArgsConstructor
+// @CrossOrigin
 @Tag(name = "Project Member Management", description = "Operations for managing user membership in projects (Manager/Project Manager scope).")
 @SecurityRequirement(name = "bearer-jwt")
 public class ProjectMemberController {
@@ -77,23 +78,40 @@ public class ProjectMemberController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @DeleteMapping("/project/{projectId}/user/{userId}")
-    @Operation(summary = "Remove a member from a project (Manager/Project Manager only)")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Member removed successfully",
-        content = @Content(mediaType = "application/json", examples = @ExampleObject(value = EXAMPLE_MEMBER_REMOVE_RESPONSE)))
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access Denied (Not Manager/Project Manager or IBU mismatch)")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Project or Project Member not found")
-    public ResponseEntity<ApiResponse<String>> removeMember(@PathVariable String projectId, @PathVariable String userId) {
-        projectMemberService.removeMember(projectId, userId);
+   @DeleteMapping("/project/remove-member")
+@Operation(summary = "Remove a member from a project (Manager/Project Manager only)")
+@io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "200",
+        description = "Member removed successfully",
+        content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(value = EXAMPLE_MEMBER_REMOVE_RESPONSE)
+        )
+)
+@io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "403",
+        description = "Access Denied (Not Manager/Project Manager or IBU mismatch)"
+)
+@io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "404",
+        description = "Project or Project Member not found"
+)
+public ResponseEntity<ApiResponse<String>> removeMember(
+        @RequestParam String projectId,
+        @RequestParam String userId
+) {
 
-        ApiResponse<String> response = ApiResponse.<String>builder()
-                .statusCode(HttpStatus.OK.value())
-                .success(true)
-                .message("Member removed successfully")
-                .data("Removed member " + userId + " from project " + projectId)
-                .timestamp(LocalDateTime.now())
-                .build();
+    projectMemberService.removeMember(projectId, userId);
 
-        return ResponseEntity.ok(response);
-    }
+    ApiResponse<String> response = ApiResponse.<String>builder()
+            .statusCode(HttpStatus.OK.value())
+            .success(true)
+            .message("Member removed successfully")
+            .data("Removed member " + userId + " from project " + projectId)
+            .timestamp(LocalDateTime.now())
+            .build();
+
+    return ResponseEntity.ok(response);
+}
+
 }

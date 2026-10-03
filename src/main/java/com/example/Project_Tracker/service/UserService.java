@@ -3,6 +3,7 @@ package com.example.Project_Tracker.service;
 import com.example.Project_Tracker.dto.UserDto;
 import com.example.Project_Tracker.entity.Ibu;
 import com.example.Project_Tracker.entity.User;
+import com.example.Project_Tracker.exceptions.ConflictException;
 import com.example.Project_Tracker.exceptions.ResourceNotFoundException;
 import com.example.Project_Tracker.repository.IbuRepository;
 import com.example.Project_Tracker.repository.UserRepository;
@@ -74,18 +75,38 @@ public class UserService {
             existingUser.setEmail(userDto.getEmail());
         }
 
-        // Only update the role if the DTO provided a non-null value
+
+
+    Ibu ibu = null;
+    if (userDto.getIbuName() != null && !userDto.getIbuName().isEmpty()) {
+        ibu = ibuRepository.findByName(userDto.getIbuName())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "IBU not found with name: " + userDto.getIbuName()));
+    }
+
+    // Check manager duplication - only when manager & IBU changed
+    if (userDto.getRole() != null && "MANAGER".equalsIgnoreCase(userDto.getRole()) && ibu != null) {
+        
+        // If user is changing to new IBU or becoming manager newly
+        if (!"MANAGER".equalsIgnoreCase(existingUser.getRole()) ||
+            existingUser.getIbu() == null ||
+            !existingUser.getIbu().getId().equals(ibu.getId())) {
+
+            List<User> existingManagers = userRepository.findByRoleAndIbu_Id("MANAGER", ibu.getId());
+            
+            // Allow if the only manager is this user itself
+            if (!existingManagers.isEmpty() &&
+                (existingManagers.size() > 1 || !existingManagers.get(0).getId().equals(existingUser.getId()))) {
+                throw new ConflictException(
+                        "IBU '" + ibu.getName() + "' already has a manager assigned.");
+            }
+        }
+    }
+            // Only update the role if the DTO provided a non-null value
         if (userDto.getRole() != null) {
             existingUser.setRole(userDto.getRole());
         }
-
-        if (userDto.getIbuId() != null) {
-            Ibu ibu = ibuRepository.findById(userDto.getIbuId())
-                    .orElseThrow(() -> new ResourceNotFoundException("IBU not found with ID: " + userDto.getIbuId()));
-            existingUser.setIbu(ibu);
-        } else {
-            existingUser.setIbu(null);
-        }
+        existingUser.setIbu(ibu);
         existingUser.setUpdatedAt(java.time.LocalDateTime.now());
         User updatedUser = userRepository.save(existingUser);
         return convertToDto(updatedUser);

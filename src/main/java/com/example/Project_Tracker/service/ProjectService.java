@@ -1,14 +1,19 @@
 package com.example.Project_Tracker.service;
 
 import com.example.Project_Tracker.dto.ProjectDto;
+import com.example.Project_Tracker.dto.ProjectResponseDto;
 import com.example.Project_Tracker.entity.Project;
+import com.example.Project_Tracker.entity.ProjectMember;
 import com.example.Project_Tracker.entity.User;
+import com.example.Project_Tracker.enums.ProjectRole;
 import com.example.Project_Tracker.exceptions.ResourceNotFoundException;
+import com.example.Project_Tracker.repository.ProjectMemberRepository;
 import com.example.Project_Tracker.repository.ProjectRepository;
 import com.example.Project_Tracker.repository.UserRepository;
 import com.example.Project_Tracker.utils.MapperUtils;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.access.method.P;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -23,9 +28,10 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final MapperUtils mapperUtils;
+    private final ProjectMemberRepository projectMemberRepository;
 
     // ✅ Get all projects based on role
-    public List<ProjectDto> getAllProjects() {
+    public List<ProjectResponseDto> getAllProjects() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -48,10 +54,9 @@ public class ProjectService {
         }
 
         return projects.stream()
-                .map(this::convertToDto)
+                .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }
-
 
     public ProjectDto getProjectById(String id) {
         Project project = projectRepository.findById(id)
@@ -84,7 +89,7 @@ public class ProjectService {
         Project existing = projectRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
-   // Only update the name if the DTO provided a non-null value
+        // Only update the name if the DTO provided a non-null value
         if (dto.getName() != null) {
             existing.setName(dto.getName());
         }
@@ -126,7 +131,20 @@ public class ProjectService {
     private ProjectDto convertToDto(Project project) {
         ProjectDto dto = mapperUtils.map(project, ProjectDto.class);
 
+        return dto;
+    }
 
+    private ProjectResponseDto convertToResponseDto(Project project) {
+        List<ProjectMember> members = projectMemberRepository.findByProject_Id(project.getId());
+
+        // Filter Manager roles and convert to names
+        List<String> managerNames = members.stream()
+                .filter(m -> m.getRoleInProject() != null && m.getRoleInProject().equals(ProjectRole.PROJECT_MANAGER))
+                .map(m -> m.getUser().getName()) // Or getFullName()
+                .collect(Collectors.toList());
+
+        ProjectResponseDto dto = mapperUtils.map(project, ProjectResponseDto.class);
+        dto.setManagers(managerNames);
 
         return dto;
     }

@@ -2,6 +2,7 @@ package com.example.Project_Tracker.service;
 
 import com.example.Project_Tracker.dto.AuthRequest;
 import com.example.Project_Tracker.dto.AuthResponse;
+import com.example.Project_Tracker.dto.ChangePasswordRequest;
 import com.example.Project_Tracker.dto.RegisterRequest;
 import com.example.Project_Tracker.dto.UserDto;
 import com.example.Project_Tracker.entity.Ibu;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -80,7 +82,27 @@ public class AuthService {
         }
 
         String token = jwtTokenProvider.generateToken(user);
-        return new AuthResponse(token, user.getRole(), user.getName());
+        return new AuthResponse(token, user.getRole(), user.getName(),user.getId().toString());
+    }
+
+    // New Method for changing password
+    public void changePassword(ChangePasswordRequest request) {
+        String currentEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        // 1. Fetch user
+        User user = userRepository.findByEmail(currentEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found (Logged-in user issue)"));
+
+        // 2. Verify old password
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPasswordHash())) {
+            throw new InvalidCredentialsException("Invalid current password");
+        }
+
+        // 3. Encode and set new password
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+
+        // 4. Save
+        userRepository.save(user);
     }
 
 }

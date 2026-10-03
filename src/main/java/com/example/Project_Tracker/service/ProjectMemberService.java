@@ -12,6 +12,7 @@ import com.example.Project_Tracker.exceptions.ResourceNotFoundException;
 import com.example.Project_Tracker.repository.ProjectMemberRepository;
 import com.example.Project_Tracker.repository.ProjectRepository;
 import com.example.Project_Tracker.repository.UserRepository;
+import com.example.Project_Tracker.repository.TaskRepository;
 import com.example.Project_Tracker.utils.MapperUtils;
 import lombok.RequiredArgsConstructor;
 
@@ -31,6 +32,7 @@ public class ProjectMemberService {
     private final ProjectMemberRepository projectMemberRepository;
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
+    private final TaskRepository taskRepository;
     private final MapperUtils mapperUtils;
 
     // ✅ Get all members of a project
@@ -101,6 +103,11 @@ public class ProjectMemberService {
                 !project.getIbu().getId().equals(currentUser.getIbu().getId())) {
             throw new AccessDeniedException("You are not authorized to remove members from a project outside your IBU");
         }
+            boolean hasAssignedTasks = taskRepository.existsByProject_IdAndAssignedTo_Id(projectId, userId);
+
+    if (hasAssignedTasks) {
+        throw new IllegalStateException("User cannot be removed because they are assigned to active tasks.");
+    }
         ProjectMemberId id = new ProjectMemberId(projectId, userId);
         if (!projectMemberRepository.existsById(id)) {
             throw new ResourceNotFoundException("Project member not found");

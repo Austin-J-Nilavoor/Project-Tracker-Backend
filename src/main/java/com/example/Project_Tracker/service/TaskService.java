@@ -67,7 +67,7 @@ public class TaskService {
                     .existsById_ProjectIdAndUser_Id(taskDto.getProjectId(), taskDto.getAssignedToId());
 
             if (!isProjectMember) {
-                throw new IllegalStateException("Operation failed: User is not a member of the required project.");
+                throw new AccessDeniedException("Operation failed: User is not a member of the required project.");
             }
         }
 

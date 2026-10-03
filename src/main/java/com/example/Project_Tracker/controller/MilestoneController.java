@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/milestones")
 @RequiredArgsConstructor
+// @CrossOrigin
 @Tag(name = "Milestone Management", description = "Operations for managing milestones within a project (Manager/Employee scope).")
 @SecurityRequirement(name = "bearer-jwt")
 public class MilestoneController {
@@ -55,7 +56,26 @@ public class MilestoneController {
 
         return ResponseEntity.ok(response);
     }
+@GetMapping("/{milestoneId}")
+    @Operation(summary = "Get all milestones for a specific project",
+        description = "Requires Manager or Project Manager role in the Project's IBU.")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Milestones fetched successfully",
+        content = @Content(mediaType = "application/json", examples = @ExampleObject(value = EXAMPLE_MILESTONE_LIST_RESPONSE)))
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access Denied")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Project not found")
+    public ResponseEntity<ApiResponse<MilestoneDto>> getMilestonesById(@PathVariable String milestoneId) {
+        MilestoneDto milestone = milestoneService.getMilestonesById(milestoneId);
 
+        ApiResponse<MilestoneDto> response = ApiResponse.<MilestoneDto>builder()
+                .statusCode(HttpStatus.OK.value())
+                .success(true)
+                .message("Milestone fetched successfully")
+                .data(milestone)
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
     // ✅ Create milestone
     @PostMapping
     @Operation(summary = "Create a new milestone",

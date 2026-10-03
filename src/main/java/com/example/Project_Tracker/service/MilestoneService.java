@@ -6,11 +6,16 @@ import com.example.Project_Tracker.entity.Project;
 import com.example.Project_Tracker.entity.User;
 import com.example.Project_Tracker.enums.ProjectRole;
 import com.example.Project_Tracker.enums.Status;
+import com.example.Project_Tracker.enums.TaskStatus;
+import com.example.Project_Tracker.exceptions.BadRequestException;
+import com.example.Project_Tracker.exceptions.ConflictException;
 import com.example.Project_Tracker.exceptions.ResourceNotFoundException;
+import com.example.Project_Tracker.exceptions.MilestoneCompletionException;
 import com.example.Project_Tracker.repository.MilestoneRepository;
 import com.example.Project_Tracker.repository.ProjectMemberRepository;
 import com.example.Project_Tracker.repository.ProjectRepository;
 import com.example.Project_Tracker.repository.UserRepository;
+import com.example.Project_Tracker.repository.TaskRepository;
 import com.example.Project_Tracker.utils.MapperUtils;
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +35,7 @@ public class MilestoneService {
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository projectMemberRepository;
     private final UserRepository userRepository;
+    private final TaskRepository taskRepository;
     private final MapperUtils mapperUtils;
 
     // ✅ Get all milestones for a project
@@ -39,7 +45,12 @@ public class MilestoneService {
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
-
+    public MilestoneDto getMilestonesById(String milestoneId) {
+        Milestone milestone = milestoneRepository.findById(milestoneId)
+        .orElseThrow(() -> new ResourceNotFoundException("Milestone not found with ID: " + milestoneId));
+        return convertToDto(milestone);
+            
+    }
     // ✅ Create milestone — only Manager or Project Manager allowed
     public MilestoneDto createMilestone(MilestoneDto dto) {
         authorizeProjectAccess(dto.getProjectId());
@@ -50,8 +61,15 @@ public class MilestoneService {
             Milestone dependency = milestoneRepository.findById(dto.getDependsOnId())
                     .orElseThrow(() -> new ResourceNotFoundException("Dependency milestone not found"));
             milestone.setDependsOn(dependency);
+            if (dependency != null && (dto.getStatus() == Status.IN_PROGRESS || dto.getStatus() == Status.COMPLETED)) {
+                if (dependency.getStatus() != Status.COMPLETED) {
+                    throw new ConflictException("Cannot start this milestone until the dependent one is completed");
+                }
+            }
         }
-
+        if (dto.getEndDate() != null && dto.getStartDate() != null && dto.getEndDate().isBefore(dto.getStartDate())) {
+            throw new BadRequestException("End date cannot be before start date");
+        }
         // milestone.setCreatedAt(LocalDateTime.now());
         Milestone saved = milestoneRepository.save(milestone);
         return convertToDto(saved);
@@ -65,7 +83,7 @@ public class MilestoneService {
         // Authorization check using project ID
         authorizeProjectAccess(existing.getProject().getId());
 
-// Only update the name if the DTO provided a non-null value
+        // Only update the name if the DTO provided a non-null value
         if (dto.getName() != null) {
             existing.setName(dto.getName());
         }
@@ -79,11 +97,20 @@ public class MilestoneService {
         if (dto.getStatus() != null) {
             existing.setStatus(dto.getStatus());
         }
-
+boolean incompleteTaskExists = taskRepository.existsByMilestone_IdAndStatusNot(
+        id, 
+        TaskStatus.COMPLETED
+    );
         // Only update the start date if the DTO provided a non-null value
-        if (dto.getStartDate() != null) {
-            existing.setStartDate(dto.getStartDate());
+    if (dto.getStatus() != null) {
+        
+        // 🚨 NEW VALIDATION: Prevent setting status to COMPLETED if tasks are incomplete
+        if (dto.getStatus() == Status.COMPLETED && incompleteTaskExists) {
+            throw new MilestoneCompletionException("Cannot complete milestone: One or more associated tasks are not completed.");
         }
+        
+        existing.setStatus(dto.getStatus());
+    }
 
         // Only update the end date if the DTO provided a non-null value
         if (dto.getEndDate() != null) {
@@ -128,14 +155,15 @@ public class MilestoneService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         boolean isProjectManager = projectMemberRepository
-                .existsById_ProjectIdAndUser_IdAndRoleInProject(projectId, currentUser.getId(), ProjectRole.valueOf("PROJECT_MANAGER"));
+                .existsById_ProjectIdAndUser_IdAndRoleInProject(projectId, currentUser.getId(),
+                        ProjectRole.valueOf("PROJECT_MANAGER"));
         boolean isSameIBU = false;
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
         if (currentUser.getIbu() != null && project.getIbu() != null) {
             isSameIBU = currentUser.getIbu().getId().equals(project.getIbu().getId());
         }
-        if ((!currentUser.getRole().equalsIgnoreCase("MANAGER")||!isSameIBU) && !isProjectManager) {
+        if ((!currentUser.getRole().equalsIgnoreCase("MANAGER") || !isSameIBU) && !isProjectManager) {
             throw new AccessDeniedException("You are not authorized to access or modify milestones for this project");
         }
     }

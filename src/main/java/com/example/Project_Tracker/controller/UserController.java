@@ -17,8 +17,11 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
+
 @RequestMapping("/api/users")
+// @CrossOrigin
 @RequiredArgsConstructor
+
 @Tag(name = "User Management", description = "Operations for managing system users (Admin/Manager scope).")
 @SecurityRequirement(name = "bearer-jwt")
 public class UserController {
@@ -96,7 +99,7 @@ public class UserController {
                 .statusCode(HttpStatus.OK.value())
                 .success(true)
                 .message("User deleted successfully")
-                .data(id)
+                .data(null)
                 .timestamp(LocalDateTime.now())
                 .build();
 

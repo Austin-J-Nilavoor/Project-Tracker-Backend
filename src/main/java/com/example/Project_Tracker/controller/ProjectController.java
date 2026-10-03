@@ -2,6 +2,7 @@ package com.example.Project_Tracker.controller;
 
 import com.example.Project_Tracker.dto.ApiResponse;
 import com.example.Project_Tracker.dto.ProjectDto;
+import com.example.Project_Tracker.dto.ProjectResponseDto;
 import com.example.Project_Tracker.service.ProjectService;
 
 import jakarta.validation.Valid;
@@ -22,6 +23,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/projects")
 @RequiredArgsConstructor
+// @CrossOrigin
 @Tag(name = "Project Management", description = "Operations for managing projects.")
 @SecurityRequirement(name = "bearer-jwt")
 public class ProjectController {
@@ -42,10 +44,10 @@ public class ProjectController {
         content = @Content(mediaType = "application/json", examples = @ExampleObject(value = EXAMPLE_PROJECT_LIST_RESPONSE)))
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Manager not associated with any IBU")
-    public ResponseEntity<ApiResponse<List<ProjectDto>>> getAllProjects() {
-        List<ProjectDto> projects = projectService.getAllProjects();
+    public ResponseEntity<ApiResponse<List<ProjectResponseDto>>> getAllProjects() {
+        List<ProjectResponseDto> projects = projectService.getAllProjects();
 
-        ApiResponse<List<ProjectDto>> response = ApiResponse.<List<ProjectDto>>builder()
+        ApiResponse<List<ProjectResponseDto>> response = ApiResponse.<List<ProjectResponseDto>>builder()
                 .statusCode(HttpStatus.OK.value())
                 .success(true)
                 .message("Projects fetched successfully")

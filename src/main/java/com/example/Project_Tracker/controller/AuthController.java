@@ -3,6 +3,7 @@ package com.example.Project_Tracker.controller;
 import com.example.Project_Tracker.dto.ApiResponse;
 import com.example.Project_Tracker.dto.AuthRequest;
 import com.example.Project_Tracker.dto.AuthResponse;
+import com.example.Project_Tracker.dto.ChangePasswordRequest;
 import com.example.Project_Tracker.dto.RegisterRequest;
 import com.example.Project_Tracker.dto.UserDto;
 import com.example.Project_Tracker.service.AuthService;
@@ -19,10 +20,12 @@ import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/auth")
+// @CrossOrigin
 @RequiredArgsConstructor
 @Tag(name = "Authentication", description = "User registration and login operations.")
 public class AuthController {
@@ -38,6 +41,7 @@ public class AuthController {
     // ---
 
     @PostMapping("/register")
+    
     @Operation(summary = "Register a new user (ADMIN only)",
         description = "Requires an ADMIN token. Registers a new user with the specified role and IBU name.")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "User registered successfully", 
@@ -77,6 +81,29 @@ public class AuthController {
                 .success(true)
                 .message("Login successful")
                 .data(authResponse)
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    // New Endpoint for changing password
+    @PutMapping("/password")
+    @Operation(summary = "Change the password for the currently authenticated user",
+        description = "Requires the old password for verification.")
+    @SecurityRequirement(name = "bearer-jwt")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Password changed successfully")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized (Invalid Token or Invalid Old Password)",
+        content = @Content(mediaType = "application/json", examples = @ExampleObject(value = EXAMPLE_ERROR_401)))
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation failed")
+    public ResponseEntity<ApiResponse<String>> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        authService.changePassword(request);
+
+        ApiResponse<String> response = ApiResponse.<String>builder()
+                .statusCode(HttpStatus.OK.value())
+                .success(true)
+                .message("Password changed successfully")
+                .data(null)
                 .timestamp(LocalDateTime.now())
                 .build();
 
